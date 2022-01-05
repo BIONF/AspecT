@@ -3,7 +3,7 @@
 
 ClAssT and AspecT are both using Bloom Filters and Support Vector Machines to classify sequence-reads (.fq-files) or assembled genomes (.fasta or .fna files).
 ClAssT assigns the Input-Data to one of the eight international clones (IC) of A.baumannii, if the input sequence is part of any of the eight clones.
-AspecT assigns the Input-Data to one of the 82 Acinetobacter Species, if the Input-Data is similar enough to one of the Reference-BloomFilter.
+AspecT assigns the Input-Data to one of the 82 Acinetobacter Species, if the Input-Data is similar enough to one specie.
 The Tool is web-based.
 
 # How ClAssT works
