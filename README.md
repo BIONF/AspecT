@@ -58,14 +58,14 @@ This function allows you to change the Trainingvectors for the SVM. There must b
   <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
 </p>
 
-# How AspecT works
+## How AspecT works
 
 AspecT works roughly the same like ClAssT. For a Taxonomic Assignment to be performed on the species level the Input-Data is processed with the same File-Reader and the Bloom Filter are searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
 Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a Sequence-Read.
 The Support Vector Machine (SVM) was further adjusted using the radial basis function as kernel-function with a regularization parameter of C = 1.5
 
-# How to use AspecT
-## Assigning Files
+## How to use AspecT
+### Assigning Files
 
 <b> 1) Choose a .fna/.fasta/.fastq-file and submit</b><br>
 <b> 2) wait (this should take just a few seconds)</b><br>
@@ -74,7 +74,7 @@ The Support Vector Machine (SVM) was further adjusted using the radial basis fun
 <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
 </p>
 
-# Adding new Acinetobacter Species
+## Adding new Acinetobacter Species
 If new Species are discovered it is possible to add them to AspecT.
 AspecT needs Reference-Data for the BloomFilter. For an accurate Assignment 4 Assemblys for each new species are recommended.
 Those Assemblys need to be concatenated into one File and should not contain more than ~11.9 Million distinct kmers. You can use the Tool [Jellyfish](https://github.com/gmarcais/Jellyfish) to count kmers.
@@ -87,7 +87,7 @@ Those Assemblys need to be concatenated into one File and should not contain mor
 
 
 
-## Adding training-data
+### Adding training-data
 AspecT needs Training-data (Genome Assemblies) for each supported species. If no separate Training-data is available you can use the BloomFilter-Reference-Data.
 
 1) Make sure that the file-name contains an Assembly-Accession (for better read-ability in the csv-file)
@@ -96,7 +96,7 @@ AspecT needs Training-data (Genome Assemblies) for each supported species. If no
 <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
 </p>
 
-## Run the Script
+### Run the Script
 
 1) Run the Script Add_Species.py with the Species-Names as additional Parameters
 ```
