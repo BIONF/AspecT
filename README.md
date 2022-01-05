@@ -40,7 +40,7 @@ Searchable Filters can be added or removed in the 'Export Options'- Section on t
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Label in the last column must match the previous entered name in step 1). <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There needs to be at least one Training-Vector for the new Genome. <br>
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/AddFilter.png" height="50%" width="50%">
+  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddFilter.png" height="50%" width="50%">
 </p>
 
 ### Removing Genomes
