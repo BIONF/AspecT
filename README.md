@@ -9,7 +9,6 @@ The Tool is web-based.
 
 ![alt text](https://github.com/Dominik0304/AspecT/blob/master/static/Workflow_ClAssT.png)
 
-
 The Tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
 
 If you are using sequence-reads for this analysis, then you can avoid the assembly-process. On the other hand, this Tool need high quality sequence-reads because its using exact matches of k-meres.
@@ -24,7 +23,7 @@ For security reasons, you need to set up an individual security key and a userna
   <b> 2) wait </b><br>
   <b> 3) get Results </b><br>
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/How2Use.png" height="50%" width="50%">
+  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/How2Use.png" height="50%" width="50%">
 </p>
 
 ## Modify the Tool
@@ -55,7 +54,7 @@ All deletable OXA-Genes are shown. Copy the name of the one you want to delete, 
 ### Modify Trainingdata for the SVM
 This function allows you to change the Trainingvectors for the SVM. There must be at least one vector per label!
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT//blob/master/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
+  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
 </p>
 
 # How AspecT works
@@ -71,7 +70,7 @@ The Support Vector Machine (SVM) was further adjusted using the radial basis fun
 <b> 2) wait (this should take just a few seconds)</b><br>
 <b> 3) get Results </b><br>
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
+<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
 </p>
 
 # Add new Acinetobacter Species
@@ -84,7 +83,7 @@ Those Assemblys need to be concatenated into one File and should not contain mor
 1) Make sure that the file-name is the species-name
 2) Copy and Paste the (concatenated-)file in the folder filter/new_species
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/AddSpecies1.png" height="50%" width="50%">
+<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies1.png" height="50%" width="50%">
 </p>
 
 
@@ -95,7 +94,7 @@ AspecT needs Training-data (Genome Assemblies) for each supported species. If no
 1) Make sure that the file-name contains an Assembly-Accession (for better read-ability in the csv-file)
 2) Copy and Paste the file in the folder Training_data/genomes
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
+<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
 </p>
 
 ## Run the Script
@@ -151,7 +150,7 @@ scikit-learn	0.23.1
 #### Change Secret Key
 Because of security reasons, you need to give this Tool a new Secret Key. Change the 'change_me' in the settings.cfg in the config folder to your own Secret Key :
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/secretkey.png" height="30%" width="30%">
+  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/secretkey.png" height="30%" width="30%">
 </p>
 
 You can generate a random Secret Key of variable length by using Python:
@@ -163,7 +162,7 @@ b'\x80\xf8\xfe\xbe\xb5t*{\x88\xdc\xb3z\x17\xacz\xeasM\xf7\xd4'
 #### Change Password and Username in 'Expert Options'
 To gain or to limit the access to the 'Expert Options' you need to change the Username and Password by using the change_password.py script:
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT/blob/master/Instructions/pictures/change_pw.png" height="50%" width="50%">
+  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/change_pw.png" height="50%" width="50%">
 </p>
 
 # How to run the App: Local Deployment
