@@ -90,7 +90,7 @@ Those Assemblys need to be concatenated into one File and should not contain mor
 ### Adding training-data
 AspecT needs Training-data (Genome Assemblies) for each supported species. If no separate Training-data is available you can use the BloomFilter-Reference-Data.
 
-1) Make sure that the file-name contains an Assembly-Accession (for better read-ability in the csv-file)
+1) Make sure that the file-name contains an Assembly-Accession (for better readability in the csv-file)
 2) Copy and Paste the file in the folder Training_data/genomes
 <p align="center">
 <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
