@@ -207,3 +207,4 @@ This project is an attempt to support hospital staff in a possible A.baumannii o
 This is a bachelor thesis project, no warranty is given. Check the licence for more information.
 
 constructive criticism/feedback always welcomed!
+"# AspecT_ClAssT" 
