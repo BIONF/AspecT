@@ -175,7 +175,7 @@ $ export FLASK_APP=flaskr
 
 $ export FLASK_ENV=development
 
-$ python Main.py
+$ python app.py
 ```
 
 ## Windows cmd:
@@ -185,7 +185,7 @@ set FLASK_APP=flaskr
 
 set FLASK_ENV=development
 
-python Main.py
+python app.py
 ```
 
 ## More about the Deployment
