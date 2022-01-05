@@ -6,7 +6,7 @@ ClAssT assigns the Input-Data to one of the eight international clones (IC) of A
 AspecT assigns the Input-Data to one of the 82 Acinetobacter Species, if the Input-Data is similar enough to one specie.
 The Tool is web-based.
 
-# How ClAssT works
+## How ClAssT works
 
 ![alt text](https://github.com/Dominik0304/AspecT_ClAssT/blob/main/static/Workflow_ClAssT.png)
 
@@ -18,8 +18,8 @@ The requirements are down below and in the requirements.txt file.
 
 For security reasons, you need to set up an individual security key and a username/password for a login. More information in the following instructions.
 
-# How to use ClAssT
-## Assigning Files
+## How to use ClAssT
+### Assigning Files
   <b> 1) Choose a file and submit</b><br>
   <b> 2) wait </b><br>
   <b> 3) get Results </b><br>
