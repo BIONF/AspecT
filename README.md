@@ -7,7 +7,7 @@ The Tool is web-based.
 
 # How ClAssT works
 
-![alt text](https://github.com/Dominik0304/AspecT/blob/master/static/Workflow_ClAssT.png)
+![alt text](https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/Workflow_ClAssT.png)
 
 The Tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
 
@@ -73,10 +73,8 @@ The Support Vector Machine (SVM) was further adjusted using the radial basis fun
 <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
 </p>
 
-# Add new Acinetobacter Species
+# Adding new Acinetobacter Species
 If new Species are discovered it is possible to add them to AspecT.
-
-## Adding species
 AspecT needs Reference-Data for the BloomFilter. For an accurate Assignment 4 Assemblys for each new species are recommended.
 Those Assemblys need to be concatenated into one File and should not contain more than ~11.9 Million distinct kmers. You can use the Tool [Jellyfish](https://github.com/gmarcais/Jellyfish) to count kmers.
 
