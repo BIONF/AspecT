@@ -1,0 +1,530 @@
+{% extends "layoutabout.html" %}
+{% block content %}
+
+        <article class="media content-section">
+          <div class="media-body">
+            <h1> AspecT and ClAssT</h1>
+            <br>
+            <p>
+            The '<b>Acinetobacter species Assignment Tool</b>' (AspecT) and the '<b>Clone-type Assinment Tool</b>'(ClAssT) are both very fast and easy to use Tools to taxonomically assign Acinetobacter Input-Data using Bloom Filters.
+            AspecT performs a taxonomic Assignment on the Acinetobacter Species-Level while ClAssT uses Strain-Typing to
+            identify international Clones of A.baumannii.
+            </p>
+            <br>
+              <h2>About Acinetobacter</h2>
+
+              <p> The genus  <a href="https://en.wikipedia.org/wiki/Acinetobacter">Acinetobacter </a> is a ubiquitous and highly divers group of aerobic and gram-negative bacteria consisting of about 94 different species.
+                  They occour in many ecological niches such as soil, water and in animals. They are able to survive with limited amounts of nutrients on dry surfaces and transmiss in natural and medical environment.
+              </p>
+              <p> The taxonomic assignment of Acinetobacter species is difficult for several reasons. One of them are high similarities between closely related species.
+                  Espacially those of the <em>A. calcoaceticus-A. baumannii-complex</em> (ACB-complex). 5 out of 6 species of the ACB-complex are pathogens that can cause nosocomial infections.
+                  Therefore it is important to taxonomically assign Acinetobacter genomes to the correct species.
+              </p>
+              <h2>{{ 'A.baumannii' }}</h2>
+              <p> <a href="https://en.wikipedia.org/wiki/Acinetobacter_baumannii"> Acinetobacter baumannii </a> is a
+                  bacterium that can cause nosocomial infections and build up multidrug resistance . Therefore, this
+                  organism can be a threat to patients with a weak immune system that are currently in a hospital environment.</p>
+                <p>
+                  There are 8 'international Clonetypes' of A.baumannii with different behaviour regarding
+                    <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2850921/" >virulence or epidemicity. </a> A
+                    identification of the present Clonetype is needed to deal with the outbreak. Current methods, like the
+                    'Multi Locus Sequence Typing (MLST)'-method, are very time consuming.
+                </p>
+                <p>
+                    To identify a A.baumannii International Clone, we developed the 'Clone-type Assignment Tool (ClAssT)' that can use
+                    Sequence reads or a assembled genome as Input-data for a fast
+                    and accurate classification. The assembling process of sequence reads is also
+                    very time consuming, but with this Tool it can be skipped. ClAssT only needs a few Sequence-reads for
+                    a classification. To avoid a long upload of a huge file that contains those reads, this Tool will read
+                    your input-file client-side and then sends the needed data to the server for further processing.
+                </p>
+          </div>
+        </article>
+
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h2>{{ 'About ClAssT' }}</h2>
+            <p> The Code for the Assignment-process is inspired by <a href="https://github.com/Phelimb/BIGSI"> BIGSI.</a></p>
+              <p> Find the actual used code for this thesis project <a href="https://github.com/w0rt0x/ClAssT---Acinetobacter-baumannii-Clone-type-Assignment-Tool"> here. </a></p>
+              <p> This tool has been evaluated by validating more than 2700 MLST-classifications of Acinetobacter genomes.
+                  Regardless, we do not take over any liability for any false results and classifications.</p>
+            <h4> How it Works </h4>
+              <p> </p>
+              <p style="text-align:center;">
+                  <img src="{{ url_for('static', filename='Workflow_ClAssT.png') }}" width="900" height="550" alt="Workflow">
+              </p>
+
+            <br class="clear"/> </br>
+            <h4> Reference-data</h4>
+              <details>
+                  <summary> <b> Used reference-data</b></summary>
+                  <p> The Tool uses a set of Assemblys per Clonetype. </p>
+                  <table>
+                  <tr>
+                    <th>Clonetype  </th>
+                    <th style='text-align:center;vertical-align:middle'>NCBI RefSeq Assembly Accession (GCF)</th>
+                  </tr>
+                  <tr>
+                    <td>IC1</td>
+                    <td>'GCF_000369185.1', 'GCF_000453105.1', 'GCF_002416345.1', 'GCF_000177695.1',
+                        'GCF_001444225.1', 'GCF_001657725.1', 'GCF_900031715.1', 'GCF_002119355.1',
+                        'GCF_000309275.1', 'GCF_000453045.1', 'GCF_000586635.1', 'GCF_001444255.1',
+                        'GCF_001399655.1', 'GCF_000969385.1'</td>
+                  </tr>
+                      <tr>
+                    <td>IC2</td>
+                    <td>'GCF_000809645.3', 'GCF_002762155.1', 'GCF_000580275.1', 'GCF_000810425.3',
+                        'GCF_000589595.1', 'GCF_000309175.1', 'GCF_002183905.1', 'GCF_000811545.3',
+                        'GCF_001669115.1', 'GCF_000939555.2', 'GCF_002277385.1', 'GCF_002183625.1',
+                        'GCF_900118135.1', 'GCF_001433675.1'</td>
+                  </tr>
+                    <tr>
+                    <td>IC3</td>
+                    <td>'GCF_000309215.1', 'GCF_001950095.1', 'GCF_002136595.1', 'GCF_001950315.1',
+                        'GCF_001432825.1', 'GCF_000286535.1', 'GCF_000305295.1', 'GCF_001666225.1',
+                        'GCF_002016825.1', 'GCF_000215005.1', 'GCF_000581435.1', 'GCF_000278645.1',
+                        'GCF_000278625.1', 'GCF_002150405.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC4</td>
+                    <td>'GCF_000368245.1', 'GCF_000988155.1', 'GCF_001500225.1', 'GCF_001758085.1',
+                        'BMBF-193'</td>
+                  </tr>
+                  <tr>
+                  <td>IC5</td>
+                    <td>'GCF_001433245.1', 'GCF_001433015.1', 'GCF_001414735.1', 'GCF_002143145.1',
+                        'GCF_000302255.1', 'GCF_001415385.1', 'GCF_000515855.1', 'GCF_002137495.1',
+                        'GCF_002018995.1', 'GCF_002183505.1', 'GCF_001649805.1', 'GCF_001432975.1',
+                        'GCF_001649795.1', 'GCF_001433655.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC6</td>
+                    <td>'GCF_000453985.1', 'GCF_900161935.1', 'GCF_001432845.1', 'GCF_900161985.1',
+                        'GCF_900161915.1', 'GCF_000189695.1', 'GCF_000453965.1', 'GCF_900161995.1',
+                        'GCF_000681555.1', 'GCF_000516155.1', 'GCF_900161975.1', 'GCF_900161955.1',
+                        'GCF_900162015.1', 'GCF_900161885.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC7</td>
+                    <td>'GCF_002573805.1', 'GCF_001007725.1', 'GCF_001612105.1', 'GCF_001007705.1',
+                        'GCF_001611995.1', 'GCF_000583375.1', 'GCF_002573915.1', 'GCF_000278665.1',
+                        'GCF_000241705.1', 'GCF_001612095.1', 'GCF_002143975.1', 'GCF_002927855.1',
+                        'GCF_000516575.2', 'GCF_002504145.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC8</td>
+                    <td>'GCF_002137755.1', 'GCF_001864715.1', 'GCF_002573795.1', 'GCF_001441455.1',
+                        'GCF_002017485.1', 'GCF_000588675.1', 'GCF_001441415.1', 'GCF_001441565.1',
+                        'GCF_001861935.1', 'GCF_002183925.1', 'GCF_001578145.1', 'GCF_001441405.1',
+                        'GCF_001908295.1', 'GCF_002144965.1'</td>
+                  </tr>
+                </table>
+              </details>
+              <details>
+                  <summary><b> Classification with Support Vector Machine</b></summary>
+                  <p> The Tool generates a vector, each vector element holds the score of a selected filter. To assign the
+                  result vector to one of the selected organisms (or none of them), a Machine Learning method called
+                  'Support Vector Machine (SVM)' has been used. SVM needs training-data for classification, the following
+                  vectors have been used as training-data for your assignment: </p>
+                  <!-- Sources for table -->
+                  <!-- https://sarahleejane.github.io/learning/python/2015/08/09/simple-tables-in-webapps-using-flask-and-pandas-with-python.html -->
+                  <!-- https://stackoverflow.com/questions/52019676/dynamic-table-with-python/52026920 -->
+                  <div style = "text-align:center;" >
+                      {{ svm_table | safe }}
+                  </div>
+              </details>
+              <details>
+                  <summary> <b> bla-OXA-genes</b></summary>
+                  <p> The following bla-OXA-Families are currently available:</p>
+                  {% for id in oxa_ids%}
+                     <p>{{ id }} </p>
+                  {% endfor %}
+              </details>
+          </div>
+        </article>
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h2>{{ 'About AspecT' }}</h2>
+            <p> AspecT works roughly the same like ClAssT. For a Taxonomic Assignment to be performed on the species level the input-data is processed with the same File-Reader and the Bloom Filter are
+                searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
+                Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a Sequence-Read.
+                <br> The Support Vector Machine (SVM) was further improved using the radial basis function as kernel-function with a regularization parameter of C = 1.5.
+                </p>
+              <p></p>
+              <p> This tool was tested and evaluated with over 3600 Acinetobacter genomes and reached an high accuracy of 99.52%.
+                  Regardless, we do not take over any liability for any false results and classifications.</p>
+              <p> The used code can be found <a href="https://github.com/Dominik0304/AspecT">here</a> on Github.  </p>
+            <h4> How it Works </h4>
+              <p> </p>
+              <p style="text-align:center;">
+                  <img src="{{ url_for('static', filename='Workflow_AspecT.png') }}" width="423" height="759" alt="Workflow">
+              </p>
+
+            <br class="clear"/> </br>
+            <h4> Reference-data</h4>
+              <details>
+                  <summary> <b> Used reference-data</b></summary>
+                  <p> The Tool uses a set of up to 4 Assemblys (if available) per Species. <br>
+                      The used Training-Data for the SVM can be found <a href="https://github.com/Dominik0304/AspecT">here</a>.</p>
+                  <table>
+                  <tr>
+                    <th>Species  </th>
+                    <th style='text-align:center;vertical-align:middle'>NCBI RefSeq Assembly Accession (GCF)</th>
+                  </tr>
+                  <tr>
+                    <td>A. albensis</td>
+                    <td>GCF_900095025.1, GCF_015209685.1</td>
+                  </tr>
+                      <tr>
+                    <td>A. apis</td>
+                    <td>GCF_900197575.1</td>
+                  </tr>
+                    <tr>
+                    <td>A. baretiae</td>
+                    <td>GCF_015627105.1, GCF_015627115.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. baumannii</td>
+                    <td>GCF_000453565.1, GCF_000453645.1, GCF_000453665.1, GCF_000453685.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. baylyi</td>
+                    <td>GCF_000302115.1, GCF_000368685.1, GCF_000621045.1, GCF_001485005.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. beijerinckii</td>
+                    <td>GCF_000368985.1, GCF_000369005.1, GCF_000931715.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. bereziniae</td>
+                    <td>GCF_000248295.1, GCF_000368505.1, GCF_001055215.1, GCF_001500155.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. bohemicus</td>
+                    <td>GCF_000367925.1, GCF_900116265.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. boissieri</td>
+                    <td>GCF_900096955.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. bouvetii</td>
+                    <td>GCF_000368865.1, GCF_000373725.1, GCF_001485025.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. brisouii</td>
+                    <td>GCF_000368645.1, GCF_000488275.1, GCF_000931655.1, GCF_000964015.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. calcoaceticus</td>
+                    <td>GCF_000162035.1, GCF_000818215.1, GCF_000931735.1, GCF_001510805.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. celticus</td>
+                    <td>GCF_001707755.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. chengduensis</td>
+                    <td>GCF_003664645.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. chinensis</td>
+                    <td>GCF_002165375.2</td>
+                  </tr>
+                  <tr>
+                  <td>A. colistiniresistens</td>
+                    <td>GCF_000413935.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. courvalinii</td>
+                    <td>GCF_000369605.1, GCF_000369785.1, GCF_000580655.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. cumulans</td>
+                    <td>GCF_003024525.3, GCF_003611525.1, GCF_003611535.1, GCF_003611575.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. defluvii</td>
+                    <td>GCF_001704615.1, GCF_013072655.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. dispersus</td>
+                    <td>GCF_009884975.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. equi</td>
+                    <td>GCF_001307195.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. GS06</td>
+                    <td>GCF_000367985.1, GCF_000369505.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. GS16</td>
+                    <td>GCF_000764915.1, GCF_000369525.1, GCF_000368445.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. guerrae</td>
+                    <td>GCF_003611455.1, GCF_009014115.1, GCF_009372255.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. gandensis</td>
+                    <td>GCF_001678755.1, GCF_008802205.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. gerneri</td>
+                    <td>GCF_000368565.1, GCF_000430245.1, GCF_000747725.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. guillouiae</td>
+                    <td>GCF_000368485.1, GCF_000414055.1, GCF_000829655.1, GCF_002370525.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. gyllenbergii</td>
+                    <td>GCF_000414075.1, GCF_000488195.1, GCF_000931695.1, GCF_001682515.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. haemolyticus</td>
+                    <td>GCF_000369085.1, GCF_000430205.1, GCF_000830135.1, GCF_000302315.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. halotolerans</td>
+                    <td>GCF_004208515.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. harbinensis</td>
+                    <td>GCF_000816495.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. idrijaensis</td>
+                    <td>GCA_905480265.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. indicus</td>
+                    <td>GCF_000488255.1, GCF_000830155.1, GCF_000964095.1, GCF_001922625.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. johnsonii</td>
+                    <td>GCF_000302335.1, GCF_000368045.1, GCF_000368805.1, GCF_000949655.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. junii</td>
+                    <td>GCF_000368765.1, GCF_000430225.1, GCF_000775815.1, GCF_000813495.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. kanungonis</td>
+                    <td>GCF_009939195.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. kookii</td>
+                    <td>GCF_900096895.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. kyonggiensis</td>
+                    <td>GCF_900107285.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. lactucae</td>
+                    <td>GCF_001605885.1, GCF_002076935.1, GCF_001595745.1, GCF_013122135.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. lanii</td>
+                    <td>GCF_011191955.1, GCF_011578285.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. larvae</td>
+                    <td>GCF_001704115.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. lwoffii</td>
+                    <td>GCF_000162095.1, GCF_000248355.1, GCF_000301755.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. marinus</td>
+                    <td>GCF_900096915.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. modestus</td>
+                    <td>GCF_014636095.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. nectaris</td>
+                    <td>GCF_000488215.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. nosocomialis</td>
+                    <td>GCF_000472005.1, GCF_000529215.1, GCF_000775795.1, GCF_000775895.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. oleivorans</td>
+                    <td>GCF_000196795.1, GCF_000488235.1, GCF_000836035.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. parvus</td>
+                    <td>GCF_000248155.1, GCF_000368005.1, GCF_000368025.1, GCF_000962795.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. piscicola</td>
+                    <td>GCF_002233755.1, GCF_004152775.1, GCF_015218165.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. pittii</td>
+                    <td>GCF_000949775.1, GCF_000949795.1, GCF_001005885.1, GCF_001056355.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. pollinis</td>
+                    <td>GCF_015627175.1, GCF_015627205.1, GCF_015627215.1, GCF_015627235.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. populi</td>
+                    <td>GCF_002174125.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. portensis</td>
+                    <td>GCF_009372215.1, GCF_010646905.1, GCF_001605895.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. proteolyticus</td>
+                    <td>GCF_001753605.1, GCF_002835245.1, GCF_000367945.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. pseudolwoffii</td>
+                    <td>GCF_0003694451.1, GCF_000369105.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. pullicarnis</td>
+                    <td>GCF_006352475.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. puyangensis</td>
+                    <td>GCF_900096995.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. qingfengensis</td>
+                    <td>GCF_001753595.1, GCF_008693185.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. radioresistens</td>
+                    <td>GCF_000368885.1, GCF_000368905.1, GCF_000972345.1, GCF_001917365.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. rathckeae</td>
+                    <td>GCF_015627125.1, GCF_015627165.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. rongchengensis</td>
+                    <td>GCF_003611475.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. rudis</td>
+                    <td>GCF_000413895.1, GCF_000829675.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. schindleri</td>
+                    <td>GCF_000368465.1, GCF_000368625.1, GCF_001485065.1, GCF_001971565.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. seifertii</td>
+                    <td>GCF_000368065.1, GCF_001054375.1, GCF_001707675.1, GCF_002148925.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. seohaensis</td>
+                    <td>GCA_018403785.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. shaoyimingii</td>
+                    <td>GCF_011174715.1, GCF_011578045.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. sichuanensis</td>
+                    <td>GCF_003024515.2</td>
+                  </tr>
+                  <tr>
+                  <td>A. soli</td>
+                    <td>GCF_000368725.1, GCF_000633005.1, GCF_000760595.1, GCF_001414585.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. stercoris</td>
+                    <td>GCF_900323515.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. tandoii</td>
+                    <td>GCF_000400735.1, GCF_000621065.1, GCF_000760555.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. terrae</td>
+                    <td>GCF_001647595.1, GCF_002135195.1, GCF_004331165.1, GCF_013004255.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. terrestris</td>
+                    <td>GCF_004331115.1, GCF_004331155.1, GCF_004331185.1, GCF_013004415.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. tianfuensis</td>
+                    <td>GCF_003611465.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. tjernbergiae</td>
+                    <td>GCF_000374425.1, GCF_000488175.1, GCF_000759995.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. towneri</td>
+                    <td>GCF_000368785.1, GCF_000688495.1, GCF_000760575.1, GCF_001758345.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. ursingii</td>
+                    <td>GCF_000368845.1, GCF_000369885.1, GCF_000934145.1, GCF_000949815.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. variabilis</td>
+                    <td>GCF_000369625.1, GCF_000804305.1, GCF_000368385.1, GCF_018409485.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. venetianus</td>
+                    <td>GCF_000308235.1, GCF_000368585.1, GCF_001484985.1, GCF_001577485.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. vivianii</td>
+                    <td>GCF_014635885.1, GCF_016502725.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. wanghuae</td>
+                    <td>GCF_009557235.1, GCF_009601085.1</td>
+                  </tr>
+                  <tr>
+                  <td>A. wuhouensis</td>
+                    <td>GCF_001696605.3, GCF_002165345.2, GCF_004209115.1, GCF_004209325.1</td>
+                  </tr>
+                </table>
+              </details>
+          </div>
+        </article>
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h2>{{ 'Department for Applied Bioinformatics' }}</h2>
+            <br>
+            <p>  AspecT and ClAssT are provided by the
+                <a href="https://www.bio.uni-frankfurt.de/43045195/Abt__Ebersberger___Biowissenschaften">
+                    Department for Applied Bioinformatics in Frankfurt (Germany). </a>
+        </p>
+              <p> ClAssT is a bachelor thesis project of Sam U. Gimbel. <br>
+                  AspecT is a bachelor thesis project of Dominik Sens.</p>
+          </div>
+        </article>
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h2>{{ 'About this website' }}</h2>
+            <p> Website-code mostly from a tutorial
+                made by <a href="https://github.com/CoreyMSchafer/code_snippets/tree/master/Python/Flask_Blog">Corey Schafer</a>.</p>
+            <p> Charts are made with <a href="https://www.chartjs.org/">Chart.js</a>.</p>
+          </div>
+        </article>
+{% endblock content %}

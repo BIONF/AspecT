@@ -1,0 +1,39 @@
+{% extends "layoutic.html" %}
+{% block content %}
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h1> A.baumannii Clone-type Assignment Tool: ClAssT</h1>
+            <br>
+              <h4> What is ClAssT? </h4>
+              <p> The '<b>Clone-type Assinment Tool (ClAssT)</b>' is a free, fast and easy-to-use method for identifiying a international
+                  Clone of A.baumannii. This Tool was made to support hospital staff to fight an outbreak of
+                  multidrug resistent A.baumannii bacteria. Click <a href="/about"> here </a> for more
+                  information.</p>
+
+            <h4> What the Tool does </h4>
+              <p> ClAssT uses exact matches to taxonomically assign (given sequence-reads of) a genome to a International Clone of A.baumannii.
+                  The identification of OXA-Families is optional. It is also possible to extend ClAssT to include more
+                   reference-genomes in the assignment-process.</p>
+
+            <h4> How to use the Tool </h4>
+              <p> Upload a .fq-file with the un-assembled or a .fasta- / .fna-file with the assembled genome by using the upload-function. </p>
+              <p> If you are using a .fq-file, you can select the number of reads that will be used (minimum is 500, maximum is 100.000).
+                  A Classification of a International Clone is usually possible with only 500 reads and is the fastest option.</p>
+              <p> The 'Quick-search' is only available for .fasta/.fna files and enables a mode where only a subset of the file-data is used
+                  for the assignment. The optional Oxa-search still uses the complete file.</p>
+              <p> The 'Include...' options allows you to select the International Clones that you want to include in your assignment-process.
+                  You can also search for OXA-Families 'on the fly' (That means that the given input reads will be checked if they contain OXA-Families). This Tool is also expandable, that means that over genomes may have been
+                  added so you can add them to your search. Added genomes are also displayed on the right.</p>
+
+
+              <h4> Input files </h4>
+              <p> You can upload the un-assembled reads with a .fq-file or the assembled Genome with a .fasta- or .fna-file.</p>
+              <p style="color:red;"> Please keep in mind that the Tool uses exact matches and therefore needs high quality 'forward'
+                  Sequence-reads (e.g. Illumina Sequencing reads), otherwise a valid result is not guaranteed.</p>
+              <p> If you are using a Sequencing-technique with a high error-rate, you can use error-correction Tools
+                  before using this assignment Tool.</p>
+          </div>
+        </article>
+{% endblock content %}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+         <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <title>Login</title>
+</head>
+    <!-- Sidebar -->
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/about">Home</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="nav-item nav-link" href="/species">Species Assignment</a>
+              <a class="nav-item nav-link" href="/ic">Clonetype Assignment</a>
+        </div>
+      </div>
+      <div class="navbar-nav">
+
+        <a class="nav-item nav-link" href="/expert_options">Expert Options</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<body>
+
+    <!-- variable content -->
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-7">
+            <article class="media content-section">
+                <div class="media-body">
+                    <h2>Expert Options</h2>
+                        <p> 'Expert Options' include adding and removing filters with (new) genomes. This function is only available
+                            for the Host. Added Genomes will be mentioned on
+                            the front page.</p>
+                    </div>
+            </article>
+        </div>
+          <!-- Sidebar -->
+        <div class="col-md-4">
+          <div class="content-section">
+              <form method="POST" enctype="multipart/form-data">
+                  {{ login_form.hidden_tag() }}
+                  <h3>Login</h3>
+                   <div class='form-group'>
+                      {{ login_form.name.label(class='option-control-label') }}
+                      <!-- Fehlerabfang  -->
+                       {% if login_form.name.errors %}
+                       {{ login_form.name(class='option-control option-control-lg is-invalid') }}
+                      <div class="errors">
+                          {% for error in login_form.name.errors %}
+                          <span style="color: red;">{{ error }}</span>
+                          {% endfor %}
+                      </div>
+                      {% else %}
+                        {{ login_form.name(class='option-control option-control-lg') }}
+                      {% endif %}
+                  </div>
+                  <div class='form-group'>
+                      {{ login_form.password.label(class='option-control-label') }}
+                      <!-- Fehlerabfang  -->
+                       {% if login_form.password.errors %}
+                       {{ login_form.password(class='option-control option-control-lg is-invalid') }}
+                      <div class="errors">
+                          {% for error in login_form.password.errors %}
+                          <span style="color: red;">{{ error }}</span>
+                          {% endfor %}
+                      </div>
+                      {% else %}
+                        {{ login_form.password(class='option-control option-control-lg') }}
+                      {% endif %}
+                  </div>
+                  <div class='form-group'>
+                          {{ login_form.submit(class='btn btn-outline-info') }}
+                  </div>
+                    {% if error %}
+                        <span style="color: red;">{{ error }}</span>
+                    {% endif %}
+              </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

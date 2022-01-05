@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title> Results of assignment process </title>
+    <link rel="icon" href="data:,">
+</head>
+
+<body>
+    <header class="site-header">
+        <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+          <h1> Results for {{filename}}</h1>
+            <h5> Time needed: {{time}} seconds</h5>
+            <h5> Results will not be saved, download them if you need them! </h5>
+        </div>
+      </div>
+    </main>
+    </header>
+    <!-- IC Results -->
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+          <article class="media content-section">
+          <div class="media-body">
+
+              <br class="clear"/> </br>
+              <h5 style="text-align:center;"> Your file was assigned to </h5>
+              <h2 style="text-align:center; color:rgba(195, 9, 34, 1)" > {{prediction}}</h2>
+              <br class="clear"/> </br>
+              <h4 style="text-align:center;"> Distribution of hits found in the reference-data,</h4>
+              <h4 style="text-align:center;"> divided by the number of tested k-meres </h4>
+              <div style = "text-align:center;" >
+
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                <canvas id="polar-chart" width="750" height="375"></canvas>
+                    <script>
+                      new Chart(document.getElementById("polar-chart"), {
+                        type: 'radar',
+                        data: {
+                          labels: {{ clonetypes|tojson }},
+                          datasets: [
+                            {
+                              label: "Score",
+                              backgroundColor: "transparent",
+                              borderColor: "rgba(195, 9, 34, 1)",
+                              scaleStartValue: 0,
+                              data: {{results_ct}}
+                            }
+                          ]
+                        },
+                        options: {
+                        legend: {
+                        display: false
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: {{ maxi |tojson}},
+                                min: 0,
+                                //stepSize: 1
+                            }
+                        },
+                          title: {
+                            display: true,
+                            text: {{ filename|tojson }}
+                          }
+                        }
+                    });
+                    </script>
+              </div>
+              <br>
+                <br class="clear"/> </br>
+          </div>
+        </article>
+        </div>
+      </div>
+    </main>
+
+    <header class="site-header">
+        <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+         <h4>Go back to  <a href="/about">home</a>  or perform a Strain-Typing with <a href="/ic"> ClAssT </h4></a>
+         <br class="clear"/> </br>
+        </div>
+      </div>
+    </main>
+    </header>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+</body>
+</html>

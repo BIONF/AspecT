@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+     <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+     <script src="/static/js.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+
+    <title> Clonetype Assignment </title>
+</head>
+<body>
+
+    <!-- Sidebar -->
+<div id="content">
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/about">Home</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="nav-item nav-link" href="/species">Species Assignment</a>
+              <a class="nav-item nav-link" href="/ic">Clonetype Assignment</a>
+
+            </div>
+            <!-- Navbar Right Side -->
+            <div class="navbar-nav">
+
+              <a class="nav-item nav-link" href="/expert_options">Expert Options</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- variable content -->
+    <main role="main" class="container">
+
+    <!-- Info -->
+      <div class="row">
+        <div class="col-md-7">
+        {% block content %}{% endblock %}
+        </div>
+          <!-- Sidebar -->
+        <div class="col-md-4">
+          <div class="content-section">
+              <h3>Select a .fq or .fasta/.fna-file</h3>
+              <p> </p>
+              <input type=file id=infile name=file accept=".fq, .fna, .fasta, .fastq">
+              <div id="extracter" style="display:none">
+                  <p> </p>
+                  <p style="text-align:center;"> <b> Reading file </b> </p>
+                       <div class="loader2"></div>
+                  <!-- l2.gif mit 100x100 -->
+                <p style="text-align:center;"> <b> This process may take some seconds, please hang on. </b> </p>
+
+              </div>
+                <!--<form method=post enctype=multipart/form-data> -->
+              <p> </p>
+              <form method="post" role="form">
+                  <p></p>
+                  <div id="opt">
+                  <label for="reads_max">Number of Reads (only for .fq-files):</label>
+                  <input type="number" id="reads_max" name="reads_max" min="500" max="100000" value="500" step="100">
+                  <p></p>
+                  <p><input type="checkbox" name="quick" id = "quick" Checked />  Quick-search (only for .fasta/.fna only)</p>
+                <button class="btn btn-primary" name = "submit" id = "submit">submit</button>
+                  <p> </p>
+
+                  <h3>Include...</h3>
+                  <p> International Clone 1 <input type="checkbox" name="IC1" id = "IC1" Checked /></p>
+                  <p> International Clone 2 <input type="checkbox" name="IC2" id = "IC2" Checked /></p>
+                  <p> International Clone 3 <input type="checkbox" name="IC3" id = "IC3" Checked /></p>
+                  <p> International Clone 4 <input type="checkbox" name="IC4" id = "IC4" Checked /></p>
+                  <p> International Clone 5 <input type="checkbox" name="IC5" id = "IC5" Checked /></p>
+                  <p> International Clone 6 <input type="checkbox" name="IC6" id = "IC6" Checked /></p>
+                  <p> International Clone 7 <input type="checkbox" name="IC7" id = "IC7" Checked /></p>
+                  <p> International Clone 8 <input type="checkbox" name="IC8" id = "IC8" Checked /></p>
+                  <p> Oxa genes <input type="checkbox" name="OXA" id = "OXA"  /></p>
+                  <p> added Genomes <input type="checkbox" name="added" id = "added"  /></p>
+
+                  <p> <b>The follwing genomes have been added: </b></p>
+                  <!-- showing new added genomes -->
+                    {% for new_genome in added %}
+                        <p>{{ new_genome }} </p>
+                    {% endfor %}
+
+                 </div>
+                </form>
+          </div>
+        </div>
+      </div>
+    </main>
+</div>
+
+<div id="loading-display" style="display:none">
+    <h3 style="text-align:center;"> Assigning your file </h3>
+    <h3 style="text-align:center;"> please wait</h3>
+    <br class="clear"/> </br>
+            <div class="loader"></div>
+    <br class="clear"/> </br>
+    <h3 style="text-align:center;"> You will be redirected automatically. </h3>
+    <h3 style="text-align:center;"> This process may take some time.</h3>
+
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+</body>
+</html>

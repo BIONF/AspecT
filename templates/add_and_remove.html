@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+             <!-- Required meta tags -->
+     <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+     <script src="/static/expert_options_js.js"></script>
+
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+
+    <title>Add/Remove Filter</title>
+</head>
+<script type="text/javascript">
+    var added = ({{added|tojson}})
+    var row = {{svm_row|tojson}}
+    var col = {{svm_col|tojson}}
+    var row_min = {{row_min|tojson}}
+    var oxa_ids = {{oxa_ids|tojson}}
+</script>
+<body>
+
+<div id="content">
+        <!-- Sidebar -->
+        <header class="site-header">
+          <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+            <div class="container">
+              <a class="navbar-brand mr-4" href="/about">Home</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+                  <a class="nav-item nav-link" href="/species">Species Assignment</a>
+                  <a class="nav-item nav-link" href="/ic">Clonetype Assignment</a>
+            </div>
+          </div>
+          <div class="navbar-nav">
+
+            <a class="nav-item nav-link" href="/expert_options">Expert Options</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Add Filter -->
+
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+            <article class="media content-section">
+                <div class="media-body">
+                    <h1> Add Filter </h1>
+                    <p> Please keep in mind that all filters have a false-positive-rate lower than 1%. That means, that
+                        the input file (.fasta or .fna format) should have not more than ~2.280.000 distinct k-meres of
+                        length 20. You can use the tool Jellyfish for counting distinct-kmeres. </p>
+                    <p> You should use the Species Coregenome for Training. </p>
+                        <h3>Name of new Filter: </h3>
+                        <input type="text" id="fname_add" name="fname_add"><br><br>
+                        <h3>Select a .fasta/.fna-file</h3>
+                        <p> </p>
+                        <input type=file id=infile name=file accept=".fna, .fasta"><br><br>
+                        <h3>Adjust the SVM Trainingdata</h3>
+                        <textarea cols="135" rows={{svm_row}} name = "SVM_add" id = "SVM_add">{{ svm_add }}</textarea>
+                        <button class="btn btn-primary" name = "adder" id = "adder">Add Filter</button>
+                </div>
+            </article>
+        </div>
+      </div>
+    </main>
+
+        <!-- Remove Filter -->
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+            <article class="media content-section">
+                <div class="media-body">
+                    <h1> Remove Filter </h1>
+                    <p> Please keep in mind that the filters 'IC1' to 'IC8' can not be deleted. </p>
+                    <p> The following filters are deletable: </p>
+                        {% for new_genome in added %}
+                            <p>{{ new_genome }} </p>
+                        {% endfor %}
+
+
+                    {% if allow_remove %}
+                    <div>
+                        <label for="fname_rem">Name of  Filter: </label><br>
+                        <input type="text" id="fname_rem" name="fname_rem"><br><br>
+                        <button class="btn btn-primary" name = "remover" id = "remover">Remove Filter</button>
+
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+      </div>
+    </main>
+
+    <!-- Changing SVM -->
+
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+            <article class="media content-section">
+                <div class="media-body">
+                    <h1> Changing current SVM Trainingdata </h1>
+                    <p> Format {{ header}} </p>
+                    <p> You can edit the Training-vectors of the SVM here. Please use the .csv format. Invalid typing will be checked.</p>
+                    <textarea cols="135" rows={{svm_row}} name = "SVM_TA" id = "SVM_TA">{{ svm_old }}</textarea>
+                    <button class="btn btn-primary" name = "SVM" id = "SVM">Update SVM</button>
+                  </div>
+            </article>
+        </div>
+      </div>
+    </main>
+
+
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+            <article class="media content-section">
+                <div class="media-body">
+                    <h1> Adding OXA-genes </h1>
+                    <h3>Enter the OXA-ID</h3>
+                    <input type="text" id="oxa_id" name="oxa_id" min="0"><br><br>
+                        <h3>Select a .fasta-file</h3>
+                        <p> </p>
+                        <input type=file id="oxa_file" name="oxa_file" accept=".fasta"><br><br>
+                    <button class="btn btn-primary" name = "add_oxa" id = "add_oxa">Add OXA</button>
+                  </div>
+            </article>
+        </div>
+      </div>
+    </main>
+
+        <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+            <article class="media content-section">
+                {% if allow_oxa %}
+                <div class="media-body">
+                    <h1> Remove OXA-genes </h1>
+                    <p> The following OXAs are deletable: </p>
+                        {% for id in oxa_ids%}
+                            <p>{{ id }} </p>
+                        {% endfor %}
+                    <h3>Enter the OXA-Name:</h3>
+                    <input type="text" id="oxa_id_rem" name="oxa_id_rem"><br><br>
+                    <button class="btn btn-primary" name = "rem_oxa" id = "rem_oxa">Remove OXA</button>
+                  </div>
+                {% else %}
+                <div class="media-body">
+                    <h3> No OXAs are deletable, there must be at least one OXA-gene!</h3>
+                </div>
+                {% endif %}
+            </article>
+        </div>
+      </div>
+    </main>
+
+</div>
+
+<div id="loading-display" style="display:none">
+    <h3 style="text-align:center;"> Executing your Changes </h3>
+    <h3 style="text-align:center;"> please wait</h3>
+        <br class="clear"/> </br>
+                <div class="loader"></div>
+        <br class="clear"/> </br>
+    <h3 style="text-align:center;"> Do not reload the page</h3>
+    <h3 style="text-align:center;"> This process may take some time.</h3>
+    <h3 style="text-align:center;"> You will be redirected automatically. </h3>
+</div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>

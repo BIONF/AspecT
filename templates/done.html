@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+
+<head>
+    <meta charset="UTF-8">
+    <title> Results of assignment process </title>
+    <link rel="icon" href="data:,">
+</head>
+
+<body>
+    <header class="site-header">
+        <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+          <h1> Results for {{filename}}</h1>
+            <h5> Time needed: {{time}} seconds</h5>
+            <h5> Results will not be saved, download them if you need them!</h5>
+        </div>
+      </div>
+    </main>
+    </header>
+    <!-- IC Results -->
+    {% if show_CT %}
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+          <article class="media content-section">
+          <div class="media-body">
+
+              <br class="clear"/> </br>
+              <h5 style="text-align:center;"> Your file was assigned to </h5>
+              <h2 style="text-align:center; color:rgba(195, 9, 34, 1)" > {{ prediction }}</h2>
+              <br class="clear"/> </br>
+              <h4 style="text-align:center;"> Distribution of hits found in the reference-data,</h4>
+              <h4 style="text-align:center;"> divided by the number of tested k-meres </h4>
+              <div style = "text-align:center;" >
+                  <!-- https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#4-radar-chart -->
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                <canvas id="polar-chart" width="750" height="375"></canvas>
+                    <script>
+                      new Chart(document.getElementById("polar-chart"), {
+                        type: 'radar',
+                        data: {
+                          labels: {{ clonetypes|tojson }},
+                          datasets: [
+                            {
+                              label: "Score",
+                              backgroundColor: "transparent",
+                              borderColor: "rgba(195, 9, 34, 1)",
+                              scaleStartValue: 0,
+                              data: {{ results_ct}}
+                            }
+                          ]
+                        },
+                        options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: {{ maxi |tojson}},
+                                min: 0,
+                                //stepSize: 1
+                            }
+                        },
+                          title: {
+                            display: true,
+                            text: {{ filename|tojson }}
+                          }
+                        }
+                    });
+                    </script>
+              </div>
+
+                <br class="clear"/> </br>
+              <details>
+                  <summary> <b> More information about the reference-data </b></summary>
+                  <p> The Tool uses a set of Assemblys per Clonetype. </p>
+                  <table>
+                  <tr>
+                    <th>Clonetype  </th>
+                    <th style='text-align:center;vertical-align:middle'>NCBI RefSeq Assembly Accession (GCF)</th>
+                  </tr>
+                  <tr>
+                    <td>IC1</td>
+                    <td>'GCF_000369185.1', 'GCF_000453105.1', 'GCF_002416345.1', 'GCF_000177695.1',
+                        'GCF_001444225.1', 'GCF_001657725.1', 'GCF_900031715.1', 'GCF_002119355.1',
+                        'GCF_000309275.1', 'GCF_000453045.1', 'GCF_000586635.1', 'GCF_001444255.1',
+                        'GCF_001399655.1', 'GCF_000969385.1'</td>
+                  </tr>
+                      <tr>
+                    <td>IC2</td>
+                    <td>'GCF_000809645.3', 'GCF_002762155.1', 'GCF_000580275.1', 'GCF_000810425.3',
+                        'GCF_000589595.1', 'GCF_000309175.1', 'GCF_002183905.1', 'GCF_000811545.3',
+                        'GCF_001669115.1', 'GCF_000939555.2', 'GCF_002277385.1', 'GCF_002183625.1',
+                        'GCF_900118135.1', 'GCF_001433675.1'</td>
+                  </tr>
+                    <tr>
+                    <td>IC3</td>
+                    <td>'GCF_000309215.1', 'GCF_001950095.1', 'GCF_002136595.1', 'GCF_001950315.1',
+                        'GCF_001432825.1', 'GCF_000286535.1', 'GCF_000305295.1', 'GCF_001666225.1',
+                        'GCF_002016825.1', 'GCF_000215005.1', 'GCF_000581435.1', 'GCF_000278645.1',
+                        'GCF_000278625.1', 'GCF_002150405.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC4</td>
+                    <td>'GCF_000368245.1', 'GCF_000988155.1', 'GCF_001500225.1', 'GCF_001758085.1',
+                        'BMBF-193'</td>
+                  </tr>
+                  <tr>
+                  <td>IC5</td>
+                    <td>'GCF_001433245.1', 'GCF_001433015.1', 'GCF_001414735.1', 'GCF_002143145.1',
+                        'GCF_000302255.1', 'GCF_001415385.1', 'GCF_000515855.1', 'GCF_002137495.1',
+                        'GCF_002018995.1', 'GCF_002183505.1', 'GCF_001649805.1', 'GCF_001432975.1',
+                        'GCF_001649795.1', 'GCF_001433655.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC6</td>
+                    <td>'GCF_000453985.1', 'GCF_900161935.1', 'GCF_001432845.1', 'GCF_900161985.1',
+                        'GCF_900161915.1', 'GCF_000189695.1', 'GCF_000453965.1', 'GCF_900161995.1',
+                        'GCF_000681555.1', 'GCF_000516155.1', 'GCF_900161975.1', 'GCF_900161955.1',
+                        'GCF_900162015.1', 'GCF_900161885.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC7</td>
+                    <td>'GCF_002573805.1', 'GCF_001007725.1', 'GCF_001612105.1', 'GCF_001007705.1',
+                        'GCF_001611995.1', 'GCF_000583375.1', 'GCF_002573915.1', 'GCF_000278665.1',
+                        'GCF_000241705.1', 'GCF_001612095.1', 'GCF_002143975.1', 'GCF_002927855.1',
+                        'GCF_000516575.2', 'GCF_002504145.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC8</td>
+                    <td>'GCF_002137755.1', 'GCF_001864715.1', 'GCF_002573795.1', 'GCF_001441455.1',
+                        'GCF_002017485.1', 'GCF_000588675.1', 'GCF_001441415.1', 'GCF_001441565.1',
+                        'GCF_001861935.1', 'GCF_002183925.1', 'GCF_001578145.1', 'GCF_001441405.1',
+                        'GCF_001908295.1', 'GCF_002144965.1'</td>
+                  </tr>
+                </table>
+                  <p> The Reference-set has not been used if you delsected the corresponding filter.</p>
+              </details>
+
+              <details>
+                  <summary><b> More information about the classification </b></summary>
+                  <p> The Tool generates a vector, each vector element holds the score of a selected filter. To assign the
+                  result vector to one of the selected organisms (or none of them), a Machine Learning method called
+                  'Support Vector Machine (SVM)' has been used. SVM needs training-data for classification, the following
+                  vectors have been used as training-data for your assignment: </p>
+                  <!-- Sources for table -->
+                  <!-- https://sarahleejane.github.io/learning/python/2015/08/09/simple-tables-in-webapps-using-flask-and-pandas-with-python.html -->
+                  <!-- https://stackoverflow.com/questions/52019676/dynamic-table-with-python/52026920 -->
+                  <div style = "text-align:center;" >
+                      {{ svm_table | safe }}
+                  </div>
+              </details>
+          </div>
+        </article>
+        </div>
+      </div>
+    </main>
+    {% else %}
+    <p> </p>
+    {% endif %}
+
+    <!-- OXA Results -->
+    {% if show_oxa %}
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+          <article class="media content-section">
+          <div class="media-body">
+              <br class="clear"/> </br>
+              <h2 style="text-align:center; color:rgba(33, 3, 201, 1)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
+              <p> </p>
+              <h4 style="text-align:center;"> Percentage of found k-meres in the reference-data</h4>
+              <p style="text-align:center;"> A OXA-Family is most likely seen as present if it passes a threshold of 0.3 .</p>
+              <div style = "text-align:center;">
+                  <!-- https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#4-radar-chart -->
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                <canvas id="oxa-chart" width="750" height="375"></canvas>
+                    <script>
+                    // Source:
+                    //https://stackoverflow.com/questions/40254027/horizontal-bar-chart-in-chart-js
+                      new Chart(document.getElementById("oxa-chart"), {
+                        type: 'horizontalBar',
+                        data: {
+                          labels: {{ oxas|tojson }},
+                          datasets: [
+                            {
+                              label: "percentege of found k-meres in reference-data",
+                              backgroundColor: "rgba(33, 3, 201, 1)",
+                              //hoverBackgroundColor: "rgba(33, 3, 201, 1)",
+                              data: {{ results_oxa}}
+                            }
+                          ]
+                        },
+                        options: {
+                            scales: {
+                                xAxes: [{
+                                    ticks: {
+                                        min: 0,
+                                        max: 1
+                                    }
+                                }],
+                                yAxes: [{
+                                    stacked: true
+                                }]
+                            }
+                        }
+                    });
+                    </script>
+              </div>
+              <p> </p>
+          </div>
+        </article>
+        </div>
+      </div>
+    </main>
+    {% else %}
+    <p> </p>
+    {% endif %}
+
+    <header class="site-header">
+        <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-11">
+         <h5>Go back to  <a href="/about">home</a></h5>
+         <br class="clear"/> </br>
+        </div>
+      </div>
+    </main>
+    </header>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+</body>
+</html>
