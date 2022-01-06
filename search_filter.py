@@ -107,6 +107,7 @@ def pre_processing():
     BF.set_arraysize(115000000)
     BF.set_hashes(7)
     BF.set_k(20)
+    # sorting paths because different Operating System are reading differently
     paths = sorted(os.listdir(r"filter/species/"))
     for i in range(len(paths)):
         paths[i] = r"filter/species/" + paths[i]
