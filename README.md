@@ -111,7 +111,7 @@ python Add_Species NewSpecies1 NewSpecies2
 
 # Setup
 ### Python Modules - Install Requirements
-Using a virtual environment is recommended.
+Using a virtual environment is recommended. The 64 bit Version of Python is required.
 ```
 pip install -r requirements.txt
 ```
