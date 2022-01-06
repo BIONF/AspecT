@@ -7,8 +7,8 @@
             <br>
             <p>
             The '<b>Acinetobacter Species Assignment Tool</b>' (AspecT) and the '<b>Clone-Type Assingment Tool</b>'(ClAssT) are both very fast and easy to use tools to taxonomically assign Acinetobacter input-data using Bloom Filters.
-            AspecT performs a taxonomic assignment on the Acinetobacter species-Level while ClAssT uses strain-typing to
-            identify international clones of A.baumannii.
+            AspecT performs a taxonomic assignment on the Acinetobacter species-Level while ClAssT uses Strain-Typing to
+            identify International Clones of A.baumannii.
             </p>
             <br>
               <h2>About Acinetobacter</h2>
@@ -24,9 +24,9 @@
                   bacterium that can cause nosocomial infections and build up multidrug resistance . Therefore, this
                   organism can be a threat to patients with a weak immune system or those currently in a hospital environment.</p>
                 <p>
-                  There are 8 'international clonetypes' of A.baumannii with different behaviour regarding
+                  There are 8 'International Clonetypes' of A.baumannii with different behaviour regarding
                     <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2850921/" >virulence or epidemicity. </a> An
-                    identification of the present clonetype is needed to deal with the outbreak. Current methods, like the
+                    identification of the present Clonetype is needed to deal with the outbreak. Current methods, like the
                     'Multi Locus Sequence Typing (MLST)'-method, are very time consuming however.
                 </p>
                 <p>
@@ -149,14 +149,14 @@
 
             <h2>{{ 'About AspecT' }}</h2>
             <p> AspecT works roughly the same as ClAssT. For a taxonomic assignment to be performed on the species level the input-data is processed with the same file-reader and the Bloom Filter is
-                run over the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
+                run with the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
                 Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a sequence-Read.
                 <br> The Support Vector Machine (SVM) was further improved using the radial basis function as kernel-function with a regularization parameter of C = 1.5.
                 </p>
               <p></p>
               <p> This tool was tested and evaluated with over 3600 Acinetobacter genomes and reached an accuracy of 99.52%.
                   Regardless, we do not take over any liability for any false results and classifications.</p>
-              <p> The used code can be found <a href="https://github.com/Dominik0304/AspecT">here</a> on Github.  </p>
+              <p> The used code can be found <a href="https://github.com/Dominik0304/AspecT_ClAssT">here</a> on Github.  </p>
             <h4> How it Works </h4>
               <p> </p>
               <p style="text-align:center;">
@@ -168,7 +168,7 @@
               <details>
                   <summary> <b> Used reference-data</b></summary>
                   <p> The Tool uses a set of up to 4 Assemblys (if available) per Species. <br>
-                      The used training-data for the SVM can be found <a href="https://github.com/Dominik0304/AspecT">here</a>.</p>
+                      The used training-data for the SVM can be found <a href="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Training_data">here</a>.</p>
                   <table>
                   <tr>
                     <th>Species  </th>
