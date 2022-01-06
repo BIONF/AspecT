@@ -2,21 +2,22 @@
 # AspecT - Acinetobacter Species Assignment Tool
 
 ClAssT and AspecT are both using Bloom Filters and Support Vector Machines to classify sequence-reads (.fq-files) or assembled genomes (.fasta or .fna files).
-ClAssT assigns the Input-Data to one of the eight international clones (IC) of A.baumannii, if the input sequence is part of any of the eight clones.
-AspecT assigns the Input-Data to one of the 82 Acinetobacter Species, if the Input-Data is similar enough to one specie.
-The Tool is web-based.
+ClAssT assigns the input-data to one of the eight International Clones (IC) of A.baumannii, if the input sequence is part of any of the eight clones.
+AspecT assigns the input-data to one of the 82 Acinetobacter species, if the input-data is similar enough to one specie.
+The tool is web-based.
 
 ## How ClAssT works
 
 ![alt text](https://github.com/Dominik0304/AspecT_ClAssT/blob/main/static/Workflow_ClAssT.png)
 
-The Tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
+The tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
 
-If you are using sequence-reads for this analysis, then you can avoid the assembly-process. On the other hand, this Tool need high quality sequence-reads because its using exact matches of k-meres.
+If you are using sequence-reads for this analysis, then you can avoid the assembly-process. On the other hand, this tool need high quality sequence-reads because its using exact matches of k-meres.
 
 The requirements are down below and in the requirements.txt file.
 
 For security reasons, you need to set up an individual security key and a username/password for a login. More information in the following instructions.
+You can find the Code of the original ClAssT-Project [here](https://github.com/gmarcais/Jellyfish) .
 
 ## How to use ClAssT
 ### Assigning Files
@@ -28,26 +29,26 @@ For security reasons, you need to set up an individual security key and a userna
 </p>
 
 ## Modify the Tool
-Searchable Filters can be added or removed in the 'Export Options'- Section on the website. Login to that area (see section 'Change Password and Username' in this readme) and follow the upcoming steps.
+Searchable Filters can be added or removed in the 'Export Options'- section on the website. Login to that area (see section 'Change Password and Username' in this readme) and follow the upcoming steps.
 
 ### Adding Genomes
 1) Choose a name
-2) Select the file that contains the Genome from your Computer
+2) Select the file that contains the genome from your computer
 3) Add/Expand the SVM Training-Vectors: <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.1) Change the 'Score_new' to the corresponding Value between 0 and 1 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.2) Add the new Score-Vectors of the genome with the corresponding Value between 0 and 1. <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The format must be ['Filename', Score-IC1, Score-IC2,..., Score_of_new, Label] like all other Vectors showen below.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The Label in the last column must match the previous entered name in step 1). <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There needs to be at least one Training-Vector for the new Genome. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.1) Change the 'Score_new' to the corresponding value between 0 and 1 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.2) Add the new Score-Vectors of the genome with the corresponding value between 0 and 1. <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The format must be ['Filename', Score-IC1, Score-IC2,..., Score_of_new, Label] like all other vectors showen below.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The label in the last column must match the previous entered name in step 1). <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There needs to be at least one Training-Vector for the new genome. <br>
 <p align="center">
   <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddFilter.png" height="50%" width="50%">
 </p>
 
 ### Removing Genomes
-All deletable Genomes are shown. Copy the name of the one you want to delete, paste in into the text field and submit.
+All deletable genomes are shown. Copy the name of the one you want to delete, paste in into the text field and submit.
 
 ### Add OXA-Genes
-Adding OXA-Genes is almost similar to adding Genomes, but without any Score-Vectors. Add the .fasta-file with the gene, put a name into the text-field and submit.
+Adding OXA-Genes is almost similar to adding genomes, but without any Score-Vectors. Add the .fasta-file with the gene, put a name into the text-field and submit.
 
 ### Remove OXA-Genes
 All deletable OXA-Genes are shown. Copy the name of the one you want to delete, paste in into the text field and submit.
@@ -60,8 +61,8 @@ This function allows you to change the Trainingvectors for the SVM. There must b
 
 ## How AspecT works
 
-AspecT works roughly the same like ClAssT. For a Taxonomic Assignment to be performed on the species level the Input-Data is processed with the same File-Reader and the Bloom Filter are searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
-Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a Sequence-Read.
+AspecT works roughly the same like ClAssT. For a taxonomic assignment to be performed on the species-Level the input-data is processed with the same File-Reader and the Bloom Filter are searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
+Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a sequence-read.
 The Support Vector Machine (SVM) was further adjusted using the radial basis function as kernel-function with a regularization parameter of C = 1.5
 
 ## How to use AspecT
@@ -75,9 +76,9 @@ The Support Vector Machine (SVM) was further adjusted using the radial basis fun
 </p>
 
 ## Adding new Acinetobacter Species
-If new Species are discovered it is possible to add them to AspecT.
-AspecT needs Reference-Data for the BloomFilter. For an accurate Assignment 4 Assemblys for each new species are recommended.
-Those Assemblys need to be concatenated into one File and should not contain more than ~11.9 Million distinct kmers. You can use the Tool [Jellyfish](https://github.com/gmarcais/Jellyfish) to count kmers.
+If new species are discovered it is possible to add them to AspecT.
+AspecT needs reference-data for the Bloom Filter. For an accurate assignment 4 Assemblys for each new species are recommended.
+Those assemblys need to be concatenated into one File and should not contain more than ~11.9 million distinct kmers. You can use the Tool [Jellyfish](https://github.com/gmarcais/Jellyfish) to count kmers.
 
 1) Make sure that the file-name is the species-name
 2) Copy and Paste the (concatenated-)file in the folder filter/new_species
@@ -87,25 +88,25 @@ Those Assemblys need to be concatenated into one File and should not contain mor
 
 
 
-### Adding training-data
-AspecT needs Training-data (Genome Assemblies) for each supported species. If no separate Training-data is available you can use the BloomFilter-Reference-Data.
+### Adding Training-data
+AspecT needs Training-data (genome assemblies) for each supported species. If no separate Training-data is available you can use the Bloom Filter-Reference-Data.
 
 1) Make sure that the file-name contains an Assembly-Accession (for better readability in the csv-file)
-2) Copy and Paste the file in the folder Training_data/genomes
+2) Copy and paste the file in the folder Training_data/genomes
 <p align="center">
 <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
 </p>
 
-### Run the Script
+### Run the script
 
-1) Run the Script Add_Species.py with the Species-Names as additional Parameters
+1) Run the script Add_Species.py with the species-names as additional parameters
 ```
 python Add_Species NewSpecies1 NewSpecies2
 ```
-2) The new added Species will be trained into a BloomFilter
-3) New SVM-Training-Data will be generated
-4) After the Script is finished make sure to delete the Assembly-Files from the filter/new_species Folder
-5) Restart the Tool to apply the new changes
+2) The new added species will be trained into a Bloom Filter
+3) New SVM-Training-data will be generated
+4) After the script is finished make sure to delete the Assembly-Files from the filter/new_species Folder
+5) Restart the tool to apply the new changes
 
 
 # Setup
@@ -147,7 +148,7 @@ scikit-learn	0.23.1
 ### Setup
 
 #### Change Secret Key
-Because of security reasons, you need to give this Tool a new Secret Key. Change the 'change_me' in the settings.cfg in the config folder to your own Secret Key :
+Because of security reasons, you need to give this tool a new Secret Key. Change the 'change_me' in the settings.cfg in the config folder to your own Secret Key :
 <p align="center">
   <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/secretkey.png" height="30%" width="30%">
 </p>
@@ -159,7 +160,7 @@ You can generate a random Secret Key of variable length by using Python:
 b'\x80\xf8\xfe\xbe\xb5t*{\x88\xdc\xb3z\x17\xacz\xeasM\xf7\xd4'
 ```
 #### Change Password and Username in 'Expert Options'
-To gain or to limit the access to the 'Expert Options' you need to change the Username and Password by using the change_password.py script:
+To gain or to limit the access to the 'Expert Options' you need to change the username and password by using the change_password.py script:
 <p align="center">
   <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/change_pw.png" height="50%" width="50%">
 </p>
@@ -205,4 +206,4 @@ This project is an attempt to support hospital staff in a possible A.baumannii o
 This is a bachelor thesis project, no warranty is given. Check the licence for more information.
 
 constructive criticism/feedback always welcomed!
-"# AspecT_ClAssT" 
+
