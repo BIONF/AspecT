@@ -25,7 +25,7 @@ You can find the code of the original ClAssT-Project [here](https://github.com/w
   <b> 2) wait </b><br>
   <b> 3) get Results </b><br>
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/How2Use.png" height="50%" width="50%">
+  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/How2Use.png" height="50%" width="50%">
 </p>
 
 ## Modify the Tool
@@ -41,7 +41,7 @@ Searchable Filters can be added or removed in the 'Export Options'- section on t
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The label in the last column must match the previous entered name in step 1). <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There needs to be at least one Training-Vector for the new genome. <br>
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddFilter.png" height="50%" width="50%">
+  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddFilter.png" height="50%" width="50%">
 </p>
 
 ### Removing Genomes
@@ -56,7 +56,7 @@ All deletable OXA-Genes are shown. Copy the name of the one you want to delete, 
 ### Modify Trainingdata for the SVM
 This function allows you to change the Trainingvectors for the SVM. There must be at least one vector per label!
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
+  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
 </p>
 
 ## How AspecT works
@@ -72,7 +72,7 @@ The Support Vector Machine (SVM) was further adjusted using the radial basis fun
 <b> 2) wait (this should take just a few seconds)</b><br>
 <b> 3) get Results </b><br>
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
+<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
 </p>
 
 ## Adding new Acinetobacter Species
@@ -83,7 +83,7 @@ Those assemblys need to be concatenated into one File and should not contain mor
 1) Make sure that the file-name is the species-name
 2) Copy and Paste the (concatenated-)file in the folder filter/new_species
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies1.png" height="50%" width="50%">
+<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddSpecies1.png" height="50%" width="50%">
 </p>
 
 
@@ -94,7 +94,7 @@ AspecT needs Training-data (genome assemblies) for each supported species. If no
 1) Make sure that the file-name contains an Assembly-Accession (for better readability in the csv-file)
 2) Copy and paste the file in the folder Training_data/genomes
 <p align="center">
-<img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
+<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
 </p>
 
 ### Run the script
@@ -150,7 +150,7 @@ scikit-learn	0.23.1
 #### Change Secret Key
 Because of security reasons, you need to give this tool a new Secret Key. Change the 'change_me' in the settings.cfg in the config folder to your own Secret Key :
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/secretkey.png" height="30%" width="30%">
+  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/secretkey.png" height="30%" width="30%">
 </p>
 
 You can generate a random Secret Key of variable length by using Python:
@@ -162,7 +162,7 @@ b'\x80\xf8\xfe\xbe\xb5t*{\x88\xdc\xb3z\x17\xacz\xeasM\xf7\xd4'
 #### Change Password and Username in 'Expert Options'
 To gain or to limit the access to the 'Expert Options' you need to change the username and password by using the change_password.py script:
 <p align="center">
-  <img src="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Instructions/pictures/change_pw.png" height="50%" width="50%">
+  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/change_pw.png" height="50%" width="50%">
 </p>
 
 # How to run the App: Local Deployment
