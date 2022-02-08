@@ -8,7 +8,7 @@ The tool is web-based.
 
 ## How ClAssT works
 
-![alt text](https://github.com/Dominik0304/AspecT_ClAssT/blob/main/static/Workflow_ClAssT.png)
+![alt text](https://github.com/BIONF/AspecT/blob/main/static/Workflow_ClAssT.png)
 
 The tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
 
