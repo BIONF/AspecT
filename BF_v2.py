@@ -290,7 +290,7 @@ class AbaumanniiBloomfilter:
                 for j in range(0, len(single_read) - self.k, 500):
                     self.number_of_kmeres += 1
                     self.lookup(single_read[j: j + self.k])
-        # ClAssT Quick-Mode every 10th kmer
+        # AspecT Sequence-Reads every 10th kmer
         elif quick == 2:
             for single_read in range(0, len(reads), 10):
                 hit_counter = 0
@@ -304,6 +304,13 @@ class AbaumanniiBloomfilter:
                     self.lookup(str(temp[j: j + self.k]))
                     if self.hit == True:
                         hit_counter += 1
+        elif quick == 3:
+            #ClAssT Quick-Mode every 10th kmer
+            for single_read in reads:
+                # r is rest, so all kmers have size k
+                for j in range(0, len(single_read) - self.k, 10):
+                    self.number_of_kmeres += 1
+                    self.lookup(single_read[j: j + self.k])
         # Uses every kmer
         else:
             for single_read in reads:
