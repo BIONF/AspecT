@@ -178,6 +178,11 @@ def assign():
     oxa = session.get('OXA', None)
     quick = session.get('quick')
 
+    if quick == True:
+        quick = 3
+    else:
+        quick = 4
+
     # user selects cases
     # Case None of the Clonetypes of A.baumannii
     start = time.time()
@@ -304,6 +309,7 @@ def assignspec():
     session['hits_ct'] = hits_ct
     # making prediction
     prediction = classify(r'Training_data/Training_data_spec.csv', score_ct, True)
+    prediction_claast = prediction
     if prediction == 'sp.':
         prediction = 'NONE of the known Acinetobacter species'
 
@@ -314,6 +320,25 @@ def assignspec():
     end = time.time()
     needed = round(end - start, 2)
     session['time'] = str(needed)
+
+    if prediction_claast == "baumannii":
+        IC_lookup = [True, True, True, True, True, True, True, True, False]
+        score_claast, names_claast, hits_claast = read_search(IC_lookup, reads, quick=1)
+        # making prediction
+        prediction_claast = classify(r'Training_data/Training_data_IC.csv', score_claast, IC_lookup)
+        # Making Label look nicer
+        if 'IC' in prediction_claast and len(prediction_claast) == 3:
+            prediction_claast = 'International Clone ' + prediction_claast[2]
+        elif prediction_claast == 'None':
+            prediction_claast = 'NONE of the selected Clones or Genomes'
+        else:
+            pass
+        session['prediction_claast'] = prediction_claast
+        session['vals_claast'] = score_claast
+        session['names_claast'] = names_claast
+        session['hits_claast'] = hits_claast
+        app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
+        return redirect('/resultsspecbaumannii')
 
     app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
     return redirect('/resultsspec')
@@ -607,3 +632,49 @@ def resultsspec():
                            maxi = 1,
                            time=session.get('time'),
                            prediction=prediction)
+
+@app.route('/resultsspecbaumannii')
+def resultsspecbaumannii():
+    """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
+
+    # Values of clonetypes, is None if not existing
+    values_ct = session.get('vals_ct')
+    hits_ct = session.get('hits_ct')
+    clonetypes = session.get('names_ct')
+    prediction = session.get('prediction')
+    values_claast = session.get('vals_claast')
+    hits_claast = session.get('hits_claast')
+    clonetypes_claast = session.get('names_claast')
+    prediction_claast = session.get('prediction_claast')
+
+
+    filename = session.get('filename')[22:]
+    filename = os.path.splitext(filename)[0]
+    dict = {}
+    clonetypes_sorted = []
+    counter = 0
+
+    #the values will be sorted by highest values for better readability
+    for i in range(len(values_ct)):
+        dict[clonetypes[i]] = values_ct[i]
+    values_sorted = sorted(values_ct, reverse = True)
+    for i in sorted(dict, key=dict.get, reverse=True):
+        clonetypes_sorted.append(i)
+
+    #only the 10 biggest values will be shown for visibility
+    if len(values_sorted) > 10:
+        values_sorted = values_sorted[:10]
+        clonetypes_sorted = clonetypes_sorted[:10]
+
+    return render_template('donespecbaumannii.html',
+                           results_ct=values_sorted,
+                           hits_ct = hits_ct,
+                           clonetypes=clonetypes_sorted,
+                           results_claast=values_claast,
+                           hits_claast = hits_claast,
+                           clonetypes_claast=clonetypes_claast,
+                           filename=filename,
+                           maxi = 1,
+                           time=session.get('time'),
+                           prediction=prediction,
+                           prediction_claast=prediction_claast)
