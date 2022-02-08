@@ -39,9 +39,11 @@
               <br class="clear"/> </br>
               <h5 style="text-align:center;"> Your file was assigned to </h5>
               <h2 style="text-align:center; color:rgba(195, 9, 34, 1)" > {{prediction}}</h2>
+              <h2 style="text-align:center; color:rgba(195, 9, 34, 1)" > Sub-Type: {{prediction_claast}}</h2>
               <br class="clear"/> </br>
               <h4 style="text-align:center;"> Distribution of hits found in the reference-data,</h4>
               <h4 style="text-align:center;"> divided by the number of tested k-meres </h4>
+              <br>
               <div style = "text-align:center;" >
 
                   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
@@ -84,12 +86,52 @@
                     </script>
               </div>
               <br>
-                <br class="clear"/> </br>
+              <br>
+              <div style = "text-align:center;" >
+                <canvas id="polar-chart-claast" width="950" height="500"></canvas>
+                    <script>
+                      new Chart(document.getElementById("polar-chart-claast"), {
+                        type: 'radar',
+                        data: {
+                          labels: {{ clonetypes_claast|tojson }},
+                          datasets: [
+                            {
+                              label: "Score",
+                              backgroundColor: "transparent",
+                              borderColor: "rgba(195, 9, 34, 1)",
+                              scaleStartValue: 0,
+                              data: {{results_claast}}
+                            }
+                          ]
+                        },
+                        options: {
+                        legend: {
+                        display: false
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: {{ maxi |tojson}},
+                                min: 0,
+                                //stepSize: 1
+                            }
+                        },
+                          title: {
+                            display: true,
+                            text: "Strain-Typing Plot"
+                          }
+                        }
+                    });
+                    </script>
+                </div>
           </div>
         </article>
         </div>
       </div>
     </main>
+
 
     <header class="site-header">
         <main role="main" class="container">
