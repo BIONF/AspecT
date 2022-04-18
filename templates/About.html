@@ -510,9 +510,19 @@
           <div class="media-body" id="How-to-use">
             <h2> How-to-use</h2>
             <br>
-            <p>
-            TO-DO
+            <p style="text-align:center;">
+                <img src="{{ url_for('static', filename='How-to.png') }}" width="1200" height="600" alt="Workflow">
             </p>
+            <ol>
+            <li> Select your sequence reads or assembled genome input-data. Allowed formats are fna/fasta and fastq <br>
+                    Adjust options: Oxa-Genes = Screen for Oxa-families, Quick-Mode (only for fna/fasta) = fast search, takes less k-mers (default mode)
+                    Sequence-Reads = Amount of reads that will be used (5000 at default). <br>
+                    </li>
+            <li> The result of the taxonomic assignment will be shown here.</li>
+            <li> A detailed results plot for the species assignment/strain-typing will be shown here.<br>
+                 The other tabs include a plot for all oxa.genes (if the option was selected), and a literature search with relevant papers from PubMed to the assigned species. <br>
+                 All plots can be downloaded with the download-button at the bottom of each plot.</li>
+            </ol>
           </div>
         </article>
 
