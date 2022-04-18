@@ -2,50 +2,79 @@
 <html lang="en">
 <head>
 
-
      <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
 
     <!-- Costum stuff from css file -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
 
 
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="/static/js.js"></script>
+
+
     <meta charset="UTF-8">
-    <title> Clonetye Assignment </title>
+    <title> XspecT </title>
     <link rel="icon" href="data:,">
 </head>
 <body>
 
-    <!-- Sidebar -->
-        <header class="site-header">
-          <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
-            <div class="container">
-              <a class="navbar-brand mr-4" href="/about">Home</a>
-              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-              <div class="collapse navbar-collapse" id="navbarToggle">
-                <div class="navbar-nav mr-auto">
-                  <a class="nav-item nav-link" href="/species">Species Assignment</a>
-                  <a class="nav-item nav-link" href="/ic">Clonetype Assignment</a>
-            </div>
-          </div>
+    <!-- navbar -->
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container-fluid">
+          <a class="navbar-brand mr-4" href="/home" style="padding-left: 10px">Home</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="nav-item nav-link" href="/species">XspecT</a>
+              <a class="nav-item nav-link" href="/ic">ClAssT</a>
+              <a class="nav-item nav-link" href="/about">About</a>
         </div>
-      </nav>
-    </header>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Sidebar -->
+<nav id="sidebarMenu" class="collapse d-lg-block sidebar collapse bg-white">
+<div class="position-sticky">
+  <div class="list-group list-group-flush mx-3 mt-4">
+    <a href="#About" class="list-group-item list-group-item-action py-2 ripple active" aria-current="true">
+      <i class="fas fa-tachometer-alt fa-fw me-3"></i><span>About this project</span>
+    </a>
+    <a href="#XspecT" class="list-group-item list-group-item-action py-2 ripple">
+      <i class="fas fa-chart-area fa-fw me-3"></i><span>XspecT</span>
+    </a>
+    <a href="#ClAssT" class="list-group-item list-group-item-action py-2 ripple">
+      <i class="fas fa-lock fa-fw me-3"></i><span>ClAssT</span></a>
+    <a href="#How-to-use" class="list-group-item list-group-item-action py-2 ripple">
+      <i class="fas fa-chart-line fa-fw me-3"></i><span>How-to-use</span>
+    </a>
+    <a href="#information" class="list-group-item list-group-item-action py-2 ripple">
+      <i class="fas fa-chart-pie fa-fw me-3"></i><span>General information</span>
+    </a>
+
+  </div>
+</div>
+</nav>
+
 
     <!-- variable content -->
     <main role="main" class="container">
-      <div class="row">
-        <div class="col-md-11">
-          {% block content %}{% endblock %}
-        </div>
+      
 
-      </div>
+          {% block content %}{% endblock %}
+
+
+
     </main>
 
 

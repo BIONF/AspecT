@@ -1,0 +1,33 @@
+{% extends "layoutspecies2.html" %}
+{% block content %}
+
+        <article class="media content-section">
+          <div class="media-body">
+
+            <h1>Acinetobacter species Assignment Tool: AspecT</h1>
+            <br>
+            <h4> What is AspecT? </h4>
+            <p> The '<b>Acinetobacter species Assignment Tool</b>' (AspecT) will assign your given Sequence-Reads or assembled genome to a <em>Acinetobacter</em> species.
+                 If an assignment is not possible, it is not a species of <em>Acinetobacter</em> or is a species that is currently not covered by the tool.
+                 </p>
+            <h4> How it works </h4>
+                 AspecT uses Bloom Filters to check k-mers from the input-data for exact matches with our database.
+                 It then taxonomically assigns the input-data to the <em>Acinetobacter</em> species with the k-mer most matches.<br> A Support Vector Machine (SVM) further ensures that
+                 closely related species, e.g. species of the <em>A. calcoaceticus-A. baumannii-complex</em> (ACB-complex), will be assigned correctly as well.<br><br>
+            <h4> How to use the Tool</h4>
+                 AspecT can take FASTA-files (.fq/.fna) as upload-data for assembled genomes and FASTQ-files (.fq) for Sequence-Reads.
+                 For Sequence-Reads you can choose the amount of Reads that will be used for the assignment.
+                 5000 Reads are the minimum amount (with 100.000 Reads as maximum) which is sufficient for the toxonomic assignment.
+                 Using more Reads can lead to a more accurate assignment but will take more time. <br><br>
+                 Please note that the Tool was designed for high quality Sequence-Reads <br>(<1% Error-Rate) with a length of 125-250bp for each Read (e.g. Illumina-Reads).<br>
+                 An accurate assignment using Reads with a high Error-Rate is not guaranteed.
+                 Please also note that AspecT only requires a small amount of k-mers for the assignment so that not every k-mere from the assembled genome or Sequence-Read will be used.
+                 If you want to use all k-mers you can disable the quick-search. Beware of runtimes of about <h8 style="color:red;"> ~10 minutes</h8>. <br>
+                 Click <a href="/aboutspecies"> here </a> for more information on how AspecT performs the toxonomic assignment.
+
+
+
+          </div>
+        </article>
+
+{% endblock content %}

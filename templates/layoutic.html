@@ -8,13 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
 
     <!-- Costum stuff from css file -->
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-     <script src="/static/js.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="/static/js.js"></script>
 
     <meta charset="UTF-8">
     <link rel="icon" href="data:,">
@@ -25,43 +27,41 @@
 
     <!-- Sidebar -->
 <div id="content">
-    <header class="site-header">
-      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
-        <div class="container">
-          <a class="navbar-brand mr-4" href="/about">Home</a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarToggle">
-            <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href="/species">Species Assignment</a>
-              <a class="nav-item nav-link" href="/ic">Clonetype Assignment</a>
-
-            </div>
-            <!-- Navbar Right Side -->
-            <div class="navbar-nav">
-
-              <a class="nav-item nav-link" href="/expert_options">Expert Options</a>
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
+  <header class="site-header">
+    <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand mr-4" href="/home" style="padding-left: 10px">Home</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarToggle">
+          <div class="navbar-nav mr-auto">
+            <a class="nav-item nav-link" href="/species">XspecT</a>
+            <a class="nav-item nav-link" href="/ic">ClAssT</a>
+            <a class="nav-item nav-link" href="/about">About</a>
+      </div>
+    </div>
+  </div>
+</nav>
+</header>
 
     <!-- variable content -->
-    <main role="main" class="container">
+    <main role="main" class="container-fluid">
 
     <!-- Info -->
       <div class="row">
-        <div class="col-md-7">
-        {% block content %}{% endblock %}
-        </div>
-          <!-- Sidebar -->
         <div class="col-md-4">
+          <div class="popup" id="popup-1">
+            <div class="content">
+              <div class="arrow-left"></div>
+              <div class="close-btn" id="close_popup">&times;</div>
+              ClAssT is reasy to use! Upload data to identify International-Clones.
+          </div>
+        </div>
           <div class="content-section">
-              <h3>Select a .fq or .fasta/.fna-file</h3>
+              <h4>Select Sequence  Reads or a Genome Assembly</h4>
               <p> </p>
-              <input type=file id=infile name=file accept=".fq, .fna, .fasta, .fastq">
+              <input class="form-control" type=file id=infile name=file accept=".fq, .fna, .fasta, .fastq">
               <div id="extracter" style="display:none">
                   <p> </p>
                   <p style="text-align:center;"> <b> Reading file </b> </p>
@@ -75,53 +75,272 @@
               <form method="post" role="form">
                   <p></p>
                   <div id="opt">
-                  <label for="reads_max">Number of Reads (only for .fq-files):</label>
-                  <input type="number" id="reads_max" name="reads_max" min="500" max="100000" value="500" step="100">
+                    <div id="AspecTinput" style="display:none">
+                      <label for="reads_max">Number of Reads:</label>
+                      <input type="number" id="reads_max" name="reads_max" min="500" max="100000" value="500" step="100">
+                    </div>
                   <p></p>
-                  <p><input type="checkbox" name="quick" id = "quick" Checked />  Quick-search (only for .fasta/.fna only)</p>
-                <button class="btn btn-primary" name = "submit" id = "submit">submit</button>
+                  <div id="AspecTinput-2" style="display:none">
+                  <input type="checkbox" name="quick" id="quick" Checked/>  Quick-search
+                    </div>
+                  <input type="checkbox" name="OXA" id = "OXA"/> Oxa-Genes
+
                   <p> </p>
 
-                  <h3>Include...</h3>
-                  <p> International Clone 1 <input type="checkbox" name="IC1" id = "IC1" Checked /></p>
-                  <p> International Clone 2 <input type="checkbox" name="IC2" id = "IC2" Checked /></p>
-                  <p> International Clone 3 <input type="checkbox" name="IC3" id = "IC3" Checked /></p>
-                  <p> International Clone 4 <input type="checkbox" name="IC4" id = "IC4" Checked /></p>
-                  <p> International Clone 5 <input type="checkbox" name="IC5" id = "IC5" Checked /></p>
-                  <p> International Clone 6 <input type="checkbox" name="IC6" id = "IC6" Checked /></p>
-                  <p> International Clone 7 <input type="checkbox" name="IC7" id = "IC7" Checked /></p>
-                  <p> International Clone 8 <input type="checkbox" name="IC8" id = "IC8" Checked /></p>
-                  <p> Oxa genes <input type="checkbox" name="OXA" id = "OXA"  /></p>
-                  <p> added Genomes <input type="checkbox" name="added" id = "added"  /></p>
+                  <div class="dropdown">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                      Select Clonetypes &emsp; &nbsp;
+                    </button>
+                    <ul class="dropdown-menu" style="width:200px" aria-labelledby="dropdownMenuButton1">
+                      <li style="text-align:center"><p> International Clone 1 <input type="checkbox" name="IC1" id = "IC1" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 2 <input type="checkbox" name="IC2" id = "IC2" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 3 <input type="checkbox" name="IC3" id = "IC3" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 4 <input type="checkbox" name="IC4" id = "IC4" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 5 <input type="checkbox" name="IC5" id = "IC5" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 6 <input type="checkbox" name="IC6" id = "IC6" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 7 <input type="checkbox" name="IC7" id = "IC7" Checked /></p></li>
+                      <li style="text-align:center"><p> International Clone 8 <input type="checkbox" name="IC8" id = "IC8" Checked /></p></li>
+                    </ul>
+                  </div>
+                  <br>
+                  <button class="btn btn-primary" name="submit" id="submit">submit</button>
 
-                  <p> <b>The follwing genomes have been added: </b></p>
+                  <p hidden> Added genomes <input type="checkbox" name="added" id = "added"/></p>
+
+                  <p hidden> <b>The follwing genomes have been added: </b></p>
                   <!-- showing new added genomes -->
                     {% for new_genome in added %}
-                        <p>{{ new_genome }} </p>
+                        <p hidden>{{ new_genome }} </p>
                     {% endfor %}
 
                  </div>
                 </form>
+          </div>
+          <div class="content-section">
+            <h4> Taxonomy:</h4>
+              <p>
+                <b>A. baumannii Sub-Type:</b> {{prediction}} <br>
+                Results will not be saved, download them if needed!
+              </p>
+          </div>
+        </div>
+          <!-- Sidebar -->
+        <div class="col-md-8">
+          <div style = "text-align:center;" class="content-section" >
+            <nav>
+              <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Clonetype Assignment</button>
+                <button class="nav-link disabled" id="nav-oxa-tab" data-bs-toggle="tab" data-bs-target="#nav-oxa" type="button" role="tab" aria-controls="nav-oxa" aria-selected="true">Oxa-Genes</button>
+                <button class="nav-link disabled" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Literature</button>
+              </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+              <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                <img id="logo_ClAssT" src="{{url_for('static', filename='Logo2.png')}}" width="624" height="468" alt="Error: image not availabe"/>
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                  <div id="plot_ClAssT" class="chart-container" style="position: relative; height:72vh; width:63vw;display:none">
+                  <canvas id="polar-chart" width="950" height="500"></canvas>
+                    <script>
+                      var myChart = new Chart(document.getElementById("polar-chart"), {
+                        type: 'radar',
+                        data: {
+                          labels: {{ clonetypes|tojson }},
+                          datasets: [
+                            {
+                              label: "Score",
+                              backgroundColor: "transparent",
+                              borderColor: "rgba(195, 9, 34, 1)",
+                              scaleStartValue: 0,
+                              data: {{results_ct}}
+                            }
+                          ]
+                        },
+                        options: {
+                        legend: {
+                        display: false
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: {{ maxi |tojson}},
+                                min: 0,
+                                //stepSize: 1
+                            }
+                        },
+                          title: {
+                            display: true,
+                            text: "A. baumannii Sub-Types"
+                          },
+                          animation: {
+                            onComplete: function() {
+                                this.options.animation.onComplete = null;
+                                var plot_image = myChart.toBase64Image();
+                                document.getElementById("download_plot").href = plot_image;
+                                document.getElementById("download_plot").download = {{prediction | tojson}} + ".png";
+                        }
+                      }
+                        }
+                    });
+                  </script>
+                </div>
+                <br>
+                <div id="plot_text" style="display: none">
+                <h4> Sub-Type: {{prediction}} </h4>
+                <br>
+                <a id="download_plot" download='image' class="download-btn">Download Plot
+                  <i class="fa fa-download"></i>
+                  </a>
+                  <br>
+                  <br>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                  <br>
+                  <div class="row">
+                    <div style="text-align:left" class="col-md-10">
+
+                    </div>
+                    <div class="col-md-2">
+                    <button class="btn btn-primary" name="Display_options" id ="Display_options">Display options</button>
+                  </div>
+                </div>
+                  <div class="span4 collapse-group" style="text-align: left">
+                    <div class="popup-2" id="popup-2">
+                      <div class="content-2">
+                        <div class="input-group">
+                          <div class="form-outline">
+                          Sort by:
+                          <select name="sort" id="id_sort" class="form-select" aria-label="Sort by" data-initial-value="relevance" data-skipped-value="none" data-saved-value="relevance">
+                            <option class="sort-option" value="relevance" data-name="sort" selected="">
+                              Best match
+                            </option>
+                            <option class="sort-option" value="date" data-name="sort">
+                              Most recent
+                            </option>
+                            <option class="sort-option" value="pubdate" data-name="sort">
+                              Publication date
+                            </option>
+                            <option class="sort-option" value="fauth" data-name="sort">
+                              First author
+                            </option>
+                            <option class="sort-option" value="jour" data-name="sort">
+                              Journal
+                            </option>
+                      </select>
+                      </div>
+                    </div>
+                      <br>
+                      <div class="input-group">
+                      <div class="form-outline">
+                        Number of papers:
+                        <input type="number" id="literature_max" class="form-control" name="literature_max" min="1" max="20" value="10" step="1">
+                      </div>
+                      </div>
+                      <br>
+                      <button class="btn btn-primary" name="apply" id="apply">apply</button>
+                    </div>
+                  </div>
+                  <div id="tab-3">
+
+                    <ol id="literature">
+                    <!-- dynamically generated list element for each paper -->
+                    </ol>
+                    <script type="text/javascript" {{ url_for('static', filename='js.js')}}></script>
+                    <script type="text/javascript">
+                       myVar = myFunc({{literature_all|tojson}})
+                    </script>
+                  </div>
+                </div>
+              </div>
+            <div class="tab-pane fade" id="nav-oxa" role="tabpanel" aria-labelledby="nav-oxa-tab">
+              <div class="span4 collapse-group" style="text-align: left">
+                <div class="media-body">
+                  <br>
+                    <h2 style="text-align:center; color:rgba(33, 3, 201, 1)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
+                    <p> </p>
+                    <h4 style="text-align:center;"> Percentage of found k-meres in the reference-data</h4>
+                    <p style="text-align:center;"> A OXA-Family is most likely seen as present if it passes a threshold of 0.3 .</p>
+                    <div style = "text-align:center;">
+                        <!-- https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#4-radar-chart -->
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                      <canvas id="oxa-chart" width="750" height="375"></canvas>
+                          <script>
+                          // Source:
+                          //https://stackoverflow.com/questions/40254027/horizontal-bar-chart-in-chart-js
+                            var myChart2 = new Chart(document.getElementById("oxa-chart"), {
+                              type: 'horizontalBar',
+                              data: {
+                                labels: {{ oxas|tojson }},
+                                datasets: [
+                                  {
+                                    label: "percentege of found k-meres in reference-data",
+                                    backgroundColor: "rgba(33, 3, 201, 1)",
+                                    //hoverBackgroundColor: "rgba(33, 3, 201, 1)",
+                                    data: {{ results_oxa }}
+                                  }
+                                ]
+                              },
+                              options: {
+                                  scales: {
+                                      xAxes: [{
+                                          ticks: {
+                                              min: 0,
+                                              max: 1
+                                          }
+                                      }],
+                                      yAxes: [{
+                                          stacked: true
+                                      }]
+                                  },
+                                  animation: {
+                                    onComplete: function() {
+                                      //  this.options.animation.onComplete = null;
+                                        var plot_image_oxa = myChart2.toBase64Image();
+                                        document.getElementById("download_oxa").href = plot_image_oxa;
+                                }
+                              }
+                              },
+                          });
+                          </script>
+                    </div>
+                    <p> </p>
+                </div>
+              </div>
+              <div id="plot_text_2" style="display: none">
+              <br>
+              <a id="download_oxa" download='bla-OXA.png' class="download-btn">Download Plot
+                <i class="fa fa-download"></i>
+                </a>
+                <br>
+                <br>
+              </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </main>
 </div>
 
-<div id="loading-display" style="display:none">
-    <h3 style="text-align:center;"> Assigning your file </h3>
-    <h3 style="text-align:center;"> please wait</h3>
-    <br class="clear"/> </br>
-            <div class="loader"></div>
-    <br class="clear"/> </br>
-    <h3 style="text-align:center;"> You will be redirected automatically. </h3>
-    <h3 style="text-align:center;"> This process may take some time.</h3>
+<script>
+if ({{filename | tojson}} != "filename") {
+  document.getElementById("plot_ClAssT").style.display = "block";
+  document.getElementById("logo_ClAssT").style.display = "none";
+  document.getElementById("plot_text").style.display = "block";
+  document.getElementById("plot_text_2").style.display = "block";
+  document.getElementById("popup-1").style.display = "none";
+  document.getElementById("nav-contact-tab").classList.remove('disabled');
+}
+if ({{oxas | tojson}} != "None") {
+  document.getElementById("nav-oxa-tab").classList.remove('disabled');
+}
+</script>
 
-</div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
 </body>
 </html>

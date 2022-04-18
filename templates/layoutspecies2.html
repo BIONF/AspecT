@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+     <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+
+    <!-- Costum stuff from css file -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="/static/js.js"></script>
+
+
+    <meta charset="UTF-8">
+    <title> AspecT </title>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div id="content">
+        <header class="site-header">
+          <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+            <div class="container-fluid">
+              <a class="navbar-brand mr-4" href="/species">AspecT</a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarToggle">
+                <div class="navbar-nav mr-auto">
+                  <a class="nav-item nav-link" href="/ic">ClAssT</a>
+                  <a class="nav-item nav-link" href="/about">About</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- variable content -->
+    <main role="main" class="container-fluid">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="content-section" >
+                  <h4>Select Sequence Reads or a Genome Assembly</h4>
+                  <p> </p>
+                  <input class="form-control" type=file id=infile name=file accept=".fq, .fna, .fasta, .fastq">
+                  <div id="extracter" style="display:none">
+                      <p> </p>
+                      <p style="text-align:center;"> <b> Assignment started... </b> </p>
+                           <div class="loader2"></div>
+                      <!-- l2.gif mit 100x100 -->
+                    <p style="text-align:center;"> <b> This process may take some seconds, please hang on. </b> </p>
+
+                  </div>
+                    <!--<form method=post enctype=multipart/form-data> -->
+                  <p> </p>
+                  <form method="post" role="form">
+                      <p></p>
+                      <div id="opt">
+                        <div id="AspecTinput" style="display:none">
+                          <label for="reads_max">Number of Reads:</label>
+                          <input type="number" id="reads_max" name="reads_max" min="5000" max="100000" value="5000" step="100">
+                        </div>
+                        <p></p>
+                        <p><input type="checkbox" name="quick" id = "quick" Checked />  Quick-search (for .fasta/.fna)</p>
+                        <button class="btn btn-primary"  name = "submit" id = "submitspec">submit</button>
+                        <p> </p>
+                      </div>
+                    </form>
+            </div>
+          <div class="content-section">
+            <h3> Results:</h3>
+              <p>
+                <b>Species:</b> {{prediction}} <br>
+                <b>Sub-Type:</b> {{prediction_claast}} <br>
+                Results will not be saved, download them if needed!
+              </p>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div style = "text-align:center;" class="content-section" >
+            <nav>
+              <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Species Assignment</button>
+                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Strain-Typing</button>
+                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Literature</button>
+              </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+              <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                  <div class="chart-container" style="position: relative; height:72vh; width:63vw">
+                  <canvas id="polar-chart" width="950" height="500"></canvas>
+                    <script>
+                      new Chart(document.getElementById("polar-chart"), {
+                        type: 'radar',
+                        data: {
+                          labels: {{ clonetypes|tojson }},
+                          datasets: [
+                            {
+                              label: "Score",
+                              backgroundColor: "transparent",
+                              borderColor: "rgba(195, 9, 34, 1)",
+                              scaleStartValue: 0,
+                              data: {{results_ct}}
+                            }
+                          ]
+                        },
+                        options: {
+                        legend: {
+                        display: false
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scale: {
+                            ticks: {
+                                beginAtZero: true,
+                                max: {{ maxi |tojson}},
+                                min: 0,
+                                //stepSize: 1
+                            }
+                        },
+                          title: {
+                            display: true,
+                            text: "Most similar Acinetobacter species"
+                          }
+                        }
+                    });
+                  </script>
+                </div>
+                <br>
+                <h4> Assigned species: {{prediction}} </h4>
+                </div>
+              <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                <div class="chart-container" style="position: relative; height:72vh; width:63vw">
+                <canvas id="polar-chart-claast" width="950" height="500"></canvas>
+                  <script>
+                    new Chart(document.getElementById("polar-chart-claast"), {
+                      type: 'radar',
+                      data: {
+                        labels: {{ clonetypes_claast|tojson }},
+                        datasets: [
+                          {
+                            label: "Score",
+                            backgroundColor: "transparent",
+                            borderColor: "rgba(195, 9, 34, 1)",
+                            scaleStartValue: 0,
+                            data: {{results_claast}}
+                          }
+                        ]
+                      },
+                      options: {
+                      legend: {
+                      display: false
+                      },
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      scale: {
+                          ticks: {
+                              beginAtZero: true,
+                              max: {{ maxi |tojson}},
+                              min: 0,
+                              //stepSize: 1
+                          }
+                      },
+                        title: {
+                          display: true,
+                          text: "A. baumannii Sub-Types"
+                        }
+                      }
+                  });
+                  </script>
+                </div>
+                <br>
+                <h4> Sub-Type: {{prediction_claast}} </h4>
+                  </div>
+              <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                <div class="span4 collapse-group" style="text-align: left">
+                  <br>
+                  <div class="input-group">
+                    <div class="form-outline">
+                    <label class="form-control" for="id_sort">Sort by:</label>
+                    <select name="sort" id="id_sort" class="form-select" aria-label="Sort by" data-initial-value="relevance" data-skipped-value="none" data-saved-value="relevance">
+                      <option class="sort-option" value="relevance" data-name="sort" selected="">
+                        Best match
+                      </option>
+                      <option class="sort-option" value="date" data-name="sort">
+                        Most recent
+                      </option>
+                      <option class="sort-option" value="pubdate" data-name="sort">
+                        Publication date
+                      </option>
+                      <option class="sort-option" value="fauth" data-name="sort">
+                        First author
+                      </option>
+                      <option class="sort-option" value="jour" data-name="sort">
+                        Journal
+                      </option>
+                </select>
+                </div>
+              </div>
+                <br>
+                <div class="input-group">
+                <div class="form-outline">
+                  <label class="form-control" for="literature_max">Number of papers:</label>
+                  <input type="number" id="literature_max" class="form-control" name="literature_max" min="1" max="20" value="10" step="1">
+                </div>
+                </div>
+                <br>
+                <button class="btn btn-primary" name = "apply" id = "apply">apply</button>
+
+                  <ol id="literature">
+                  <!-- dynamically generated list element for each paper -->
+                  </ol>
+                  <script type="text/javascript" {{ url_for('static', filename='js.js')}}></script>
+                  <script type="text/javascript">
+                     myVar = myFunc({{literature_all|tojson}})
+                  </script>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+
+</body>
+</html>

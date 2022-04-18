@@ -2,173 +2,72 @@
 {% block content %}
 
         <article class="media content-section">
-          <div class="media-body">
-            <h1> AspecT and ClAssT</h1>
+          <div class="media-body" id="About">
+            <h1> XspecT and ClAssT</h1>
             <br>
             <p>
-            The '<b>Acinetobacter Species Assignment Tool</b>' (AspecT) and the '<b>Clone-Type Assingment Tool</b>'(ClAssT) are both very fast and easy to use tools to taxonomically assign Acinetobacter input-data using Bloom Filters.
-            AspecT performs a taxonomic assignment on the Acinetobacter species-Level while ClAssT uses Strain-Typing to
-            identify International Clones of A.baumannii.
+            The '<b>Acinetobacter species Assignment Tool</b>' (XspecT) and the '<b>Clone-type Assinment Tool</b>'(ClAssT) are both very fast and easy to use tools to taxonomically assign Acinetobacter Input-Data using Bloom Filters.
+            XspecT performs a taxonomic assignment on the Acinetobacter Species-Level while ClAssT uses Strain-Typing to
+            identify International-Clones of A.baumannii.
             </p>
             <br>
               <h2>About Acinetobacter</h2>
 
-              <p> The genus  <a href="https://en.wikipedia.org/wiki/Acinetobacter">Acinetobacter </a> is a ubiquitous and highly diverse group of aerobic and gram-negative bacteria consisting of about 94 different species, occuring in ecological niches such as soil, water and in animals. They are able to survive with limited amounts of nutrients on dry surfaces and transmiss in natural and medical environment.
+              <p> The genus  <a href="https://en.wikipedia.org/wiki/Acinetobacter">Acinetobacter </a> is a ubiquitous and highly divers group of aerobic and gram-negative bacteria consisting of about 94 different species.
+                  They occour in many ecological niches such as soil, water and in animals. They are able to survive with limited amounts of nutrients on dry surfaces and transmiss in natural and medical environment.
               </p>
-              <p> The taxonomic assignment of the Acinetobacter species is difficult for several reasons. One of them is the high similarity between closely related species.
+              <p> The taxonomic assignment of Acinetobacter species is difficult for several reasons. One of them are high similarities between closely related species.
                   Espacially those of the <em>A. calcoaceticus-A. baumannii-complex</em> (ACB-complex). 5 out of 6 species of the ACB-complex are pathogens that can cause nosocomial infections.
                   Therefore it is important to taxonomically assign Acinetobacter genomes to the correct species.
               </p>
               <h2>{{ 'A.baumannii' }}</h2>
               <p> <a href="https://en.wikipedia.org/wiki/Acinetobacter_baumannii"> Acinetobacter baumannii </a> is a
-                  bacterium that can cause nosocomial infections and build up multidrug resistance . Therefore, this
-                  organism can be a threat to patients with a weak immune system or those currently in a hospital environment.</p>
+                  bacterium that can cause nosocomial infections and build up multidrug resistance. Therefore, this
+                  organism can be a threat to patients with a weak immune system that are currently in a hospital environment.</p>
                 <p>
                   There are 8 'International Clonetypes' of A.baumannii with different behaviour regarding
-                    <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2850921/" >virulence or epidemicity. </a> An
+                    <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2850921/" >virulence or epidemicity. </a> A
                     identification of the present Clonetype is needed to deal with the outbreak. Current methods, like the
-                    'Multi Locus Sequence Typing (MLST)'-method, are very time consuming however.
+                    'Multi Locus Sequence Typing (MLST)'-method, are very time consuming.
                 </p>
                 <p>
-                    To identify am A.baumannii international clone, we developed the 'Clone-Type Assignment Tool (ClAssT)' that uses
-                    sequence reads or an assembled genome as input-data for a fast
+                    To identify a A.baumannii International Clone, we developed the 'Clone-type Assignment Tool (ClAssT)' that can use
+                    Sequence-Reads or a assembled genome as Input-data for a fast
                     and accurate classification. The assembling process of sequence reads is also
-                    very time consuming, but with this tool it can be skipped. ClAssT only needs a few sequence-reads for
+                    very time consuming, but with this tool it can be skipped. ClAssT only needs a few Sequence-Reads for
                     a classification. To avoid a long upload of a huge file that contains those reads, this tool will read
-                    your input-file client-side and then send the needed data to a server for further processing.
+                    your input-file client-side and then sends the needed data to the server for further processing.
                 </p>
           </div>
         </article>
 
 
         <article class="media content-section">
-          <div class="media-body">
+          <div class="media-body" id="XspecT">
 
-            <h2>{{ 'About ClAssT' }}</h2>
-            <p> The Code for the Assignment-process is inspired by <a href="https://github.com/Phelimb/BIGSI"> BIGSI.</a></p>
-              <p> Find the actual used code for this thesis project <a href="https://github.com/w0rt0x/ClAssT---Acinetobacter-baumannii-Clone-type-Assignment-Tool"> here. </a></p>
-              <p> This tool has been evaluated by validating more than 2700 MLST-classifications of Acinetobacter genomes.
-                  Regardless, we do not take over any liability for any false results and classifications.</p>
-            <h4> How it Works </h4>
-              <p> </p>
-              <p style="text-align:center;">
-                  <img src="{{ url_for('static', filename='Workflow_ClAssT.png') }}" width="900" height="550" alt="Workflow">
-              </p>
-
-            <br class="clear"/> </br>
-            <h4> Reference-data</h4>
-              <details>
-                  <summary> <b> Used reference-data</b></summary>
-                  <p> The Tool uses a set of Assemblys per Clonetype. </p>
-                  <table>
-                  <tr>
-                    <th>Clonetype  </th>
-                    <th style='text-align:center;vertical-align:middle'>NCBI RefSeq Assembly Accession (GCF)</th>
-                  </tr>
-                  <tr>
-                    <td>IC1</td>
-                    <td>'GCF_000369185.1', 'GCF_000453105.1', 'GCF_002416345.1', 'GCF_000177695.1',
-                        'GCF_001444225.1', 'GCF_001657725.1', 'GCF_900031715.1', 'GCF_002119355.1',
-                        'GCF_000309275.1', 'GCF_000453045.1', 'GCF_000586635.1', 'GCF_001444255.1',
-                        'GCF_001399655.1', 'GCF_000969385.1'</td>
-                  </tr>
-                      <tr>
-                    <td>IC2</td>
-                    <td>'GCF_000809645.3', 'GCF_002762155.1', 'GCF_000580275.1', 'GCF_000810425.3',
-                        'GCF_000589595.1', 'GCF_000309175.1', 'GCF_002183905.1', 'GCF_000811545.3',
-                        'GCF_001669115.1', 'GCF_000939555.2', 'GCF_002277385.1', 'GCF_002183625.1',
-                        'GCF_900118135.1', 'GCF_001433675.1'</td>
-                  </tr>
-                    <tr>
-                    <td>IC3</td>
-                    <td>'GCF_000309215.1', 'GCF_001950095.1', 'GCF_002136595.1', 'GCF_001950315.1',
-                        'GCF_001432825.1', 'GCF_000286535.1', 'GCF_000305295.1', 'GCF_001666225.1',
-                        'GCF_002016825.1', 'GCF_000215005.1', 'GCF_000581435.1', 'GCF_000278645.1',
-                        'GCF_000278625.1', 'GCF_002150405.1'</td>
-                  </tr>
-                  <tr>
-                  <td>IC4</td>
-                    <td>'GCF_000368245.1', 'GCF_000988155.1', 'GCF_001500225.1', 'GCF_001758085.1',
-                        'BMBF-193'</td>
-                  </tr>
-                  <tr>
-                  <td>IC5</td>
-                    <td>'GCF_001433245.1', 'GCF_001433015.1', 'GCF_001414735.1', 'GCF_002143145.1',
-                        'GCF_000302255.1', 'GCF_001415385.1', 'GCF_000515855.1', 'GCF_002137495.1',
-                        'GCF_002018995.1', 'GCF_002183505.1', 'GCF_001649805.1', 'GCF_001432975.1',
-                        'GCF_001649795.1', 'GCF_001433655.1'</td>
-                  </tr>
-                  <tr>
-                  <td>IC6</td>
-                    <td>'GCF_000453985.1', 'GCF_900161935.1', 'GCF_001432845.1', 'GCF_900161985.1',
-                        'GCF_900161915.1', 'GCF_000189695.1', 'GCF_000453965.1', 'GCF_900161995.1',
-                        'GCF_000681555.1', 'GCF_000516155.1', 'GCF_900161975.1', 'GCF_900161955.1',
-                        'GCF_900162015.1', 'GCF_900161885.1'</td>
-                  </tr>
-                  <tr>
-                  <td>IC7</td>
-                    <td>'GCF_002573805.1', 'GCF_001007725.1', 'GCF_001612105.1', 'GCF_001007705.1',
-                        'GCF_001611995.1', 'GCF_000583375.1', 'GCF_002573915.1', 'GCF_000278665.1',
-                        'GCF_000241705.1', 'GCF_001612095.1', 'GCF_002143975.1', 'GCF_002927855.1',
-                        'GCF_000516575.2', 'GCF_002504145.1'</td>
-                  </tr>
-                  <tr>
-                  <td>IC8</td>
-                    <td>'GCF_002137755.1', 'GCF_001864715.1', 'GCF_002573795.1', 'GCF_001441455.1',
-                        'GCF_002017485.1', 'GCF_000588675.1', 'GCF_001441415.1', 'GCF_001441565.1',
-                        'GCF_001861935.1', 'GCF_002183925.1', 'GCF_001578145.1', 'GCF_001441405.1',
-                        'GCF_001908295.1', 'GCF_002144965.1'</td>
-                  </tr>
-                </table>
-              </details>
-              <details>
-                  <summary><b> Classification with Support Vector Machine</b></summary>
-                  <p> The Tool generates a vector, each vector element holds the score of a selected filter. To assign the
-                  result vector to one of the selected organisms (or none of them), a machine learning method called
-                  'Support Vector Machine (SVM)' was used. SVM needs training-data for classification: the following
-                  vectors have been used as training-data for your assignment: </p>
-                  <!-- Sources for table -->
-                  <!-- https://sarahleejane.github.io/learning/python/2015/08/09/simple-tables-in-webapps-using-flask-and-pandas-with-python.html -->
-                  <!-- https://stackoverflow.com/questions/52019676/dynamic-table-with-python/52026920 -->
-                  <div style = "text-align:center;" >
-                      {{ svm_table | safe }}
-                  </div>
-              </details>
-              <details>
-                  <summary> <b> bla-OXA-genes</b></summary>
-                  <p> The following bla-OXA-families are currently available:</p>
-                  {% for id in oxa_ids%}
-                     <p>{{ id }} </p>
-                  {% endfor %}
-              </details>
-          </div>
-        </article>
-
-        <article class="media content-section">
-          <div class="media-body">
-
-            <h2>{{ 'About AspecT' }}</h2>
-            <p> AspecT works roughly the same as ClAssT. For a taxonomic assignment to be performed on the species level the input-data is processed with the same file-reader and the Bloom Filter is
-                run with the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
-                Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a sequence-Read.
+            <h2>{{ 'About XspecT' }}</h2>
+            <!-- TODO: CHANGE WORDING  -->
+            <p> XspecT is similar to ClAssT. For a taxonomic assignment to be performed on the species level the Input-Data is processed with the same File-Reader and the Bloom Filter are
+                searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
+                Only a small amount of k-mers are needed for the species assignment. XspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a Sequence-Read.
                 <br> The Support Vector Machine (SVM) was further improved using the radial basis function as kernel-function with a regularization parameter of C = 1.5.
                 </p>
               <p></p>
-              <p> This tool was tested and evaluated with over 3600 Acinetobacter genomes and reached an accuracy of 99.52%.
+              <p> This tool was tested and evaluated with over 3600 Acinetobacter genomes and reached an high accuracy of 99.52%.
                   Regardless, we do not take over any liability for any false results and classifications.</p>
-              <p> The used code can be found <a href="https://github.com/Dominik0304/AspecT_ClAssT">here</a> on Github.  </p>
+              <p> The used code can be found <a href="https://github.com/Dominik0304/AspecT">here</a> on Github.  </p>
             <h4> How it Works </h4>
               <p> </p>
               <p style="text-align:center;">
                   <img src="{{ url_for('static', filename='Workflow_AspecT.png') }}" width="423" height="759" alt="Workflow">
               </p>
 
-            <br class="clear"/> </br>
+            <br class="clear"/>
             <h4> Reference-data</h4>
               <details>
                   <summary> <b> Used reference-data</b></summary>
-                  <p> The Tool uses a set of up to 4 Assemblys (if available) per Species. <br>
-                      The used training-data for the SVM can be found <a href="https://github.com/Dominik0304/AspecT_ClAssT/blob/main/Training_data">here</a>.</p>
+                  <p> The tool uses a set of up to 4 assemblys for each species. <br>
+                      The used Training-Data for the SVM can be found <a href="https://github.com/Dominik0304/AspecT">here</a>.</p>
                   <table>
                   <tr>
                     <th>Species  </th>
@@ -504,26 +403,133 @@
         </article>
 
         <article class="media content-section">
-          <div class="media-body">
+          <div class="media-body" id="ClAssT">
 
-            <h2>{{ 'Department for Applied Bioinformatics' }}</h2>
+            <h2>{{ 'About ClAssT' }}</h2>
+            <p> The code for the assignment process is inspired by <a href="https://github.com/Phelimb/BIGSI"> BIGSI.</a></p>
+              <p> Find the actual used code for this thesis project <a href="https://github.com/w0rt0x/ClAssT---Acinetobacter-baumannii-Clone-type-Assignment-Tool"> here. </a></p>
+              <p> This tool has been evaluated by validating more than 2700 MLST-classifications of Acinetobacter genomes.
+                  Regardless, we do not take over any liability for any false results and classifications.</p>
+            <h4> How it Works </h4>
+              <p> </p>
+              <p style="text-align:center;">
+                  <img src="{{ url_for('static', filename='Workflow_ClAssT.png') }}" width="900" height="550" alt="Workflow">
+              </p>
+
+            <br class="clear"/>
+            <h4> Reference-data</h4>
+              <details>
+                  <summary> <b> Used reference-data</b></summary>
+                  <p> The tool uses a set of Assemblys per Clonetype. </p>
+                  <table>
+                  <tr>
+                    <th>Clonetype  </th>
+                    <th style='text-align:center;vertical-align:middle'>NCBI RefSeq Assembly Accession (GCF)</th>
+                  </tr>
+                  <tr>
+                    <td>IC1</td>
+                    <td>'GCF_000369185.1', 'GCF_000453105.1', 'GCF_002416345.1', 'GCF_000177695.1',
+                        'GCF_001444225.1', 'GCF_001657725.1', 'GCF_900031715.1', 'GCF_002119355.1',
+                        'GCF_000309275.1', 'GCF_000453045.1', 'GCF_000586635.1', 'GCF_001444255.1',
+                        'GCF_001399655.1', 'GCF_000969385.1'</td>
+                  </tr>
+                      <tr>
+                    <td>IC2</td>
+                    <td>'GCF_000809645.3', 'GCF_002762155.1', 'GCF_000580275.1', 'GCF_000810425.3',
+                        'GCF_000589595.1', 'GCF_000309175.1', 'GCF_002183905.1', 'GCF_000811545.3',
+                        'GCF_001669115.1', 'GCF_000939555.2', 'GCF_002277385.1', 'GCF_002183625.1',
+                        'GCF_900118135.1', 'GCF_001433675.1'</td>
+                  </tr>
+                    <tr>
+                    <td>IC3</td>
+                    <td>'GCF_000309215.1', 'GCF_001950095.1', 'GCF_002136595.1', 'GCF_001950315.1',
+                        'GCF_001432825.1', 'GCF_000286535.1', 'GCF_000305295.1', 'GCF_001666225.1',
+                        'GCF_002016825.1', 'GCF_000215005.1', 'GCF_000581435.1', 'GCF_000278645.1',
+                        'GCF_000278625.1', 'GCF_002150405.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC4</td>
+                    <td>'GCF_000368245.1', 'GCF_000988155.1', 'GCF_001500225.1', 'GCF_001758085.1',
+                        'BMBF-193'</td>
+                  </tr>
+                  <tr>
+                  <td>IC5</td>
+                    <td>'GCF_001433245.1', 'GCF_001433015.1', 'GCF_001414735.1', 'GCF_002143145.1',
+                        'GCF_000302255.1', 'GCF_001415385.1', 'GCF_000515855.1', 'GCF_002137495.1',
+                        'GCF_002018995.1', 'GCF_002183505.1', 'GCF_001649805.1', 'GCF_001432975.1',
+                        'GCF_001649795.1', 'GCF_001433655.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC6</td>
+                    <td>'GCF_000453985.1', 'GCF_900161935.1', 'GCF_001432845.1', 'GCF_900161985.1',
+                        'GCF_900161915.1', 'GCF_000189695.1', 'GCF_000453965.1', 'GCF_900161995.1',
+                        'GCF_000681555.1', 'GCF_000516155.1', 'GCF_900161975.1', 'GCF_900161955.1',
+                        'GCF_900162015.1', 'GCF_900161885.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC7</td>
+                    <td>'GCF_002573805.1', 'GCF_001007725.1', 'GCF_001612105.1', 'GCF_001007705.1',
+                        'GCF_001611995.1', 'GCF_000583375.1', 'GCF_002573915.1', 'GCF_000278665.1',
+                        'GCF_000241705.1', 'GCF_001612095.1', 'GCF_002143975.1', 'GCF_002927855.1',
+                        'GCF_000516575.2', 'GCF_002504145.1'</td>
+                  </tr>
+                  <tr>
+                  <td>IC8</td>
+                    <td>'GCF_002137755.1', 'GCF_001864715.1', 'GCF_002573795.1', 'GCF_001441455.1',
+                        'GCF_002017485.1', 'GCF_000588675.1', 'GCF_001441415.1', 'GCF_001441565.1',
+                        'GCF_001861935.1', 'GCF_002183925.1', 'GCF_001578145.1', 'GCF_001441405.1',
+                        'GCF_001908295.1', 'GCF_002144965.1'</td>
+                  </tr>
+                </table>
+              </details>
+              <details>
+                  <summary><b> Classification with Support Vector Machine</b></summary>
+                  <p> The tool generates a vector, each vector element holds the score of a selected filter. To assign the
+                  result vector to one of the selected organisms (or none of them), a Machine Learning method called
+                  'Support Vector Machine (SVM)' has been used. SVM needs training-data for classification, the following
+                  vectors have been used as training-data for your assignment: </p>
+                  <!-- Sources for table -->
+                  <!-- https://sarahleejane.github.io/learning/python/2015/08/09/simple-tables-in-webapps-using-flask-and-pandas-with-python.html -->
+                  <!-- https://stackoverflow.com/questions/52019676/dynamic-table-with-python/52026920 -->
+                  <div style = "text-align:center;" >
+                      {{ svm_table | safe }}
+                  </div>
+              </details>
+              <details>
+                  <summary> <b> bla-OXA-genes</b></summary>
+                  <p> The following bla-OXA-Families are currently available:</p>
+                  {% for id in oxa_ids%}
+                     <p>{{ id }} </p>
+                  {% endfor %}
+              </details>
+          </div>
+        </article>
+
+
+        <article class="media content-section">
+          <div class="media-body" id="How-to-use">
+            <h2> How-to-use</h2>
             <br>
-            <p>  AspecT and ClAssT are provided by the
-                <a href="https://www.bio.uni-frankfurt.de/43045195/Abt__Ebersberger___Biowissenschaften">
-                    Department for Applied Bioinformatics in Frankfurt (Germany). </a>
-        </p>
-              <p> ClAssT is a bachelor thesis project of Sam U. Gimbel. <br>
-                  AspecT is a bachelor thesis project of Dominik Sens.</p>
+            <p>
+            TO-DO
+            </p>
           </div>
         </article>
 
         <article class="media content-section">
-          <div class="media-body">
+          <div class="media-body" id="information">
 
             <h2>{{ 'About this website' }}</h2>
-            <p> Website-code mostly from a tutorial
-                made by <a href="https://github.com/CoreyMSchafer/code_snippets/tree/master/Python/Flask_Blog">Corey Schafer</a>.</p>
-            <p> Charts are made with <a href="https://www.chartjs.org/">Chart.js</a>.</p>
+            <br>
+            <p>  XspecT and ClAssT are provided by the
+                <a href="https://www.bio.uni-frankfurt.de/43045195/Abt__Ebersberger___Biowissenschaften">
+                    Department for Applied Bioinformatics in Frankfurt (Germany). </a>
+        </p>
+              <p> ClAssT is a bachelor thesis project of Sam U. Gimbel. <br>
+                  XspecT is a bachelor thesis project of Dominik Sens.</p>
+                  <p> Website-code partly from a tutorial
+                      made by <a href="https://github.com/CoreyMSchafer/code_snippets/tree/master/Python/Flask_Blog">Corey Schafer</a>.</p>
+                  <p> Charts are made with <a href="https://www.chartjs.org/">Chart.js</a>.</p>
           </div>
         </article>
 {% endblock content %}
