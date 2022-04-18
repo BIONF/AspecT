@@ -15,6 +15,8 @@ from Filter_Editor import add_filter, remove_filter, edit_svm, remove_oxa, add_o
 import logging
 import pickle
 import Add_Species
+from Bio import Entrez, Medline
+import re
 
 # Source Logging and Error Handling
 # https://flask.palletsprojects.com/en/1.1.x/logging/
@@ -123,8 +125,13 @@ class User(UserMixin):
 # redirects to the homepage
 @app.route("/", methods=["GET", "POST"])
 def redirect_home():
-    return redirect('about')
+    return redirect('home')
 
+# about page
+@app.route('/home')
+def home():
+    """ returns home page """
+    return render_template('home.html')
 
 # leads to ClAssT website
 @app.route('/ic', methods=['GET', 'POST'])
@@ -163,7 +170,23 @@ def ic():
             # Source: https://flask-restplus.readthedocs.io/en/stable/errors.html
             abort(400)
 
-    return render_template('ic.html', added=added)
+    return render_template('ic.html', added=added,
+                            results_ct = [0,0,0,0,0,0,0,0,0,0],
+                            hits_ct = [0,0,0,0,0,0,0,0,0,0],
+                            clonetypes=[0,0,0,0,0,0,0,0,0,0],
+                            results_oxa=[0,0,0,0],
+                            oxas='None',
+                            maxi_oxa=0,
+                            filename="filename",
+                            maxi = 1,
+                            time=0,
+                            prediction="n/a",
+                            literature = "",
+                            literature_content="",
+                            literature_abstract="",
+                            literature_authors=[[""],[""],[""],[""],[""],[""],[""],[""],[""],[""]],
+                            literature_journal="",
+                            literature_all="")
 
 
 # Starts ClAssT Assignment Process and leads to result-page
@@ -314,7 +337,7 @@ def assignspec():
         prediction = 'NONE of the known Acinetobacter species'
 
     else:
-        prediction = "Acinetobacter " + prediction
+        prediction = "A. " + prediction
     session['prediction'] = prediction
 
     end = time.time()
@@ -338,7 +361,14 @@ def assignspec():
         session['names_claast'] = names_claast
         session['hits_claast'] = hits_claast
         app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
-        return redirect('/resultsspecbaumannii')
+        return redirect('/resultsspec')
+    else:
+        session['prediction_claast'] = "n/a"
+        session['vals_claast'] = [0,0,0,0,0,0,0,0]
+        session['names_claast'] = [0,0,0,0,0,0,0,0]
+        session['hits_claast'] = [0,0,0,0,0,0,0,0]
+        app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
+        return redirect('/resultsspec')
 
     app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
     return redirect('/resultsspec')
@@ -384,7 +414,25 @@ def species():
         else:
             # Source: https://flask-restplus.readthedocs.io/en/stable/errors.html
             abort(400)
-    return render_template('species.html', added = added)
+    return render_template('species.html',
+                            added = added,
+                            results_ct = [0,0,0,0,0,0,0,0,0,0],
+                            hits_ct = [0,0,0,0,0,0,0,0,0,0],
+                            clonetypes=[0,0,0,0,0,0,0,0,0,0],
+                            results_claast = [0,0,0,0,0,0,0,0],
+                            hits_claast = [0,0,0,0,0,0,0,0],
+                            clonetypes_claast = [0,0,0,0,0,0,0,0],
+                            filename="filename",
+                            maxi = 1,
+                            time=0,
+                            prediction="n/a",
+                            prediction_claast="n/a",
+                            literature = "",
+                            literature_content="",
+                            literature_abstract="",
+                            literature_authors=[[""],[""],[""],[""],[""],[""],[""],[""],[""],[""]],
+                            literature_journal="",
+                            literature_all="")
 
 
 # add and remove page page
@@ -539,6 +587,120 @@ def results():
     IC3_clade = False
     score_ic3 = 0
 
+    # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
+    # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
+    Entrez.email = 'dominik.sens@t-online.de'
+    handle = Entrez.esearch(db='pubmed',
+                            sort='relevance',
+                            retmax='10',
+                            retmode='xml',
+                            term= "Acinetobacter baumannii " + prediction)
+    pubmed_results = Entrez.read(handle)
+
+    id_list = pubmed_results['IdList']
+    literature = []
+    for i in id_list:
+        literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+    ids = ','.join(id_list)
+    handle = Entrez.efetch(db='pubmed',
+                            retmode='xml',
+                            id=ids)
+    papers = Entrez.read(handle)
+
+    handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+    literature_info = Medline.parse(handle2)
+    literature_info = list(literature_info)
+
+    literature_content = []
+    literature_abstract = []
+    literature_authors = []
+    literature_journal = []
+    literature_id = []
+    for paper in papers['PubmedArticle']:
+        literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+        try:
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+        except:
+            literature_abstract.append(["No abstract available"])
+
+    for i in range(len(literature_content)):
+        literature_id.append("paper_" + str(i))
+
+    for record in literature_info:
+        literature_authors.append(record.get("AU", "?"))
+        literature_journal.append(record.get("SO", "?"))
+
+    for i in range(len(literature_authors)):
+        literature_authors[i] = " ,".join(literature_authors[i])
+
+
+    for i in range(len(literature_abstract)):
+        literature_abstract[i] = " ".join(literature_abstract[i])
+
+    CLEANR = re.compile('<.*?>')
+
+    for i in range(len(literature_content)):
+        literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+        literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+    literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+
+    if request.method == 'POST':
+        data = request.json
+        Entrez.email = 'dominik.sens@t-online.de'
+        handle = Entrez.esearch(db='pubmed',
+                                sort=str(data[1]),
+                                retmax=str(data[0]),
+                                retmode='xml',
+                                term=prediction)
+        pubmed_results = Entrez.read(handle)
+
+        id_list = pubmed_results['IdList']
+        literature = []
+        for i in id_list:
+            literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+        ids = ','.join(id_list)
+        handle = Entrez.efetch(db='pubmed',
+                                retmode='xml',
+                                id=ids)
+        papers = Entrez.read(handle)
+
+        handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+        literature_info = Medline.parse(handle2)
+        literature_info = list(literature_info)
+
+        literature_content = []
+        literature_abstract = []
+        literature_authors = []
+        literature_journal = []
+        literature_id = []
+        for paper in papers['PubmedArticle']:
+            literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+
+        for i in range(len(literature_content)):
+            literature_id.append("paper_" + str(i))
+
+        for record in literature_info:
+            literature_authors.append(record.get("AU", "?"))
+            literature_journal.append(record.get("SO", "?"))
+
+        for i in range(len(literature_authors)):
+            literature_authors[i] = " ,".join(literature_authors[i])
+
+
+        for i in range(len(literature_abstract)):
+            literature_abstract[i] = " ".join(literature_abstract[i])
+
+        CLEANR = re.compile('<.*?>')
+
+        for i in range(len(literature_content)):
+            literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+            literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+        literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+        return json.dumps(literature_all)
+
     if lookup is not None:
 
         # validates, if plot for Clonetypes needs to be made or not
@@ -570,7 +732,7 @@ def results():
         filename = session.get('filename')[22:]
         filename = os.path.splitext(filename)[0]
 
-        return render_template('done.html',
+        return render_template('ic.html',
                                show_oxa=show_oxa,  # Display Oxa sector or not
                                results_oxa=values_oxa,
                                oxas=oxa_names,
@@ -581,9 +743,10 @@ def results():
                                maxi=maxi,
                                time=session.get('time'),
                                svm_table=svm_table,
-                               prediction=prediction)
+                               prediction=prediction,
+                               literature_all=literature_all)
     else:
-        return render_template('done.html',
+        return render_template('ic.html',
                                show_oxa=False,
                                results_oxa=values_oxa,
                                oxas='None',
@@ -596,7 +759,7 @@ def results():
                                time='0')
 
 
-@app.route('/resultsspec')
+@app.route('/resultsspec', methods=['GET', 'POST'])
 def resultsspec():
     """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
 
@@ -604,49 +767,11 @@ def resultsspec():
     values_ct = session.get('vals_ct')
     hits_ct = session.get('hits_ct')
     clonetypes = session.get('names_ct')
-    prediction = session.get('prediction')
-
-    filename = session.get('filename')[22:]
-    filename = os.path.splitext(filename)[0]
-    dict = {}
-    clonetypes_sorted = []
-    counter = 0
-
-    #the values will be sorted by highest values for better readability
-    for i in range(len(values_ct)):
-        dict[clonetypes[i]] = values_ct[i]
-    values_sorted = sorted(values_ct, reverse = True)
-    for i in sorted(dict, key=dict.get, reverse=True):
-        clonetypes_sorted.append(i)
-
-    #only the 10 biggest values will be shown for visibility
-    if len(values_sorted) > 10:
-        values_sorted = values_sorted[:10]
-        clonetypes_sorted = clonetypes_sorted[:10]
-
-    return render_template('donespec.html',
-                           results_ct=values_sorted,
-                           hits_ct = hits_ct,
-                           clonetypes=clonetypes_sorted,
-                           filename=filename,
-                           maxi = 1,
-                           time=session.get('time'),
-                           prediction=prediction)
-
-@app.route('/resultsspecbaumannii')
-def resultsspecbaumannii():
-    """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
-
-    # Values of clonetypes, is None if not existing
-    values_ct = session.get('vals_ct')
-    hits_ct = session.get('hits_ct')
-    clonetypes = session.get('names_ct')
-    prediction = session.get('prediction')
     values_claast = session.get('vals_claast')
     hits_claast = session.get('hits_claast')
     clonetypes_claast = session.get('names_claast')
+    prediction = session.get('prediction')
     prediction_claast = session.get('prediction_claast')
-
 
     filename = session.get('filename')[22:]
     filename = os.path.splitext(filename)[0]
@@ -666,7 +791,121 @@ def resultsspecbaumannii():
         values_sorted = values_sorted[:10]
         clonetypes_sorted = clonetypes_sorted[:10]
 
-    return render_template('donespecbaumannii.html',
+    # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
+    # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
+    Entrez.email = 'dominik.sens@t-online.de'
+    handle = Entrez.esearch(db='pubmed',
+                            sort='relevance',
+                            retmax='10',
+                            retmode='xml',
+                            term=prediction)
+    pubmed_results = Entrez.read(handle)
+
+    id_list = pubmed_results['IdList']
+    literature = []
+    for i in id_list:
+        literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+    ids = ','.join(id_list)
+    handle = Entrez.efetch(db='pubmed',
+                            retmode='xml',
+                            id=ids)
+    papers = Entrez.read(handle)
+
+    handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+    literature_info = Medline.parse(handle2)
+    literature_info = list(literature_info)
+
+    literature_content = []
+    literature_abstract = []
+    literature_authors = []
+    literature_journal = []
+    literature_id = []
+    for paper in papers['PubmedArticle']:
+        literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+        try:
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+        except:
+            literature_abstract.append(["No abstract available"])
+
+    for i in range(len(literature_content)):
+        literature_id.append("paper_" + str(i))
+
+    for record in literature_info:
+        literature_authors.append(record.get("AU", "?"))
+        literature_journal.append(record.get("SO", "?"))
+
+    for i in range(len(literature_authors)):
+        literature_authors[i] = " ,".join(literature_authors[i])
+
+
+    for i in range(len(literature_abstract)):
+        literature_abstract[i] = " ".join(literature_abstract[i])
+
+    CLEANR = re.compile('<.*?>')
+
+    for i in range(len(literature_content)):
+        literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+        literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+    literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+
+    if request.method == 'POST':
+        data = request.json
+        Entrez.email = 'dominik.sens@t-online.de'
+        handle = Entrez.esearch(db='pubmed',
+                                sort=str(data[1]),
+                                retmax=str(data[0]),
+                                retmode='xml',
+                                term=prediction)
+        pubmed_results = Entrez.read(handle)
+
+        id_list = pubmed_results['IdList']
+        literature = []
+        for i in id_list:
+            literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+        ids = ','.join(id_list)
+        handle = Entrez.efetch(db='pubmed',
+                                retmode='xml',
+                                id=ids)
+        papers = Entrez.read(handle)
+
+        handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+        literature_info = Medline.parse(handle2)
+        literature_info = list(literature_info)
+
+        literature_content = []
+        literature_abstract = []
+        literature_authors = []
+        literature_journal = []
+        literature_id = []
+        for paper in papers['PubmedArticle']:
+            literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+
+        for i in range(len(literature_content)):
+            literature_id.append("paper_" + str(i))
+
+        for record in literature_info:
+            literature_authors.append(record.get("AU", "?"))
+            literature_journal.append(record.get("SO", "?"))
+
+        for i in range(len(literature_authors)):
+            literature_authors[i] = " ,".join(literature_authors[i])
+
+
+        for i in range(len(literature_abstract)):
+            literature_abstract[i] = " ".join(literature_abstract[i])
+
+        CLEANR = re.compile('<.*?>')
+
+        for i in range(len(literature_content)):
+            literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+            literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+        literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+        return json.dumps(literature_all)
+
+    return render_template('species.html',
                            results_ct=values_sorted,
                            hits_ct = hits_ct,
                            clonetypes=clonetypes_sorted,
@@ -677,4 +916,166 @@ def resultsspecbaumannii():
                            maxi = 1,
                            time=session.get('time'),
                            prediction=prediction,
-                           prediction_claast=prediction_claast)
+                           prediction_claast=prediction_claast,
+                           literature_all=literature_all)
+
+
+@app.route('/resultsspecbaumannii')
+def resultsspecbaumannii():
+    """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
+
+    # Values of clonetypes, is None if not existing
+    values_ct = session.get('vals_ct')
+    hits_ct = session.get('hits_ct')
+    clonetypes = session.get('names_ct')
+    values_claast = session.get('vals_claast')
+    hits_claast = session.get('hits_claast')
+    clonetypes_claast = session.get('names_claast')
+    prediction = session.get('prediction')
+    prediction_claast = session.get('prediction_claast')
+
+    filename = session.get('filename')[22:]
+    filename = os.path.splitext(filename)[0]
+    dict = {}
+    clonetypes_sorted = []
+    counter = 0
+
+    #the values will be sorted by highest values for better readability
+    for i in range(len(values_ct)):
+        dict[clonetypes[i]] = values_ct[i]
+    values_sorted = sorted(values_ct, reverse = True)
+    for i in sorted(dict, key=dict.get, reverse=True):
+        clonetypes_sorted.append(i)
+
+    #only the 10 biggest values will be shown for visibility
+    if len(values_sorted) > 10:
+        values_sorted = values_sorted[:10]
+        clonetypes_sorted = clonetypes_sorted[:10]
+
+    # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
+    # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
+    Entrez.email = 'dominik.sens@t-online.de'
+    handle = Entrez.esearch(db='pubmed',
+                            sort='relevance',
+                            retmax='10',
+                            retmode='xml',
+                            term=prediction)
+    pubmed_results = Entrez.read(handle)
+
+    id_list = pubmed_results['IdList']
+    literature = []
+    for i in id_list:
+        literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+    ids = ','.join(id_list)
+    handle = Entrez.efetch(db='pubmed',
+                            retmode='xml',
+                            id=ids)
+    papers = Entrez.read(handle)
+
+    handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+    literature_info = Medline.parse(handle2)
+    literature_info = list(literature_info)
+
+    literature_content = []
+    literature_abstract = []
+    literature_authors = []
+    literature_journal = []
+    literature_id = []
+    for paper in papers['PubmedArticle']:
+        literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+        try:
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+        except:
+            literature_abstract.append(["No abstract available"])
+
+    for i in range(len(literature_content)):
+        literature_id.append("paper_" + str(i))
+
+    for record in literature_info:
+        literature_authors.append(record.get("AU", "?"))
+        literature_journal.append(record.get("SO", "?"))
+
+    for i in range(len(literature_authors)):
+        literature_authors[i] = " ,".join(literature_authors[i])
+
+
+    for i in range(len(literature_abstract)):
+        literature_abstract[i] = " ".join(literature_abstract[i])
+
+    CLEANR = re.compile('<.*?>')
+
+    for i in range(len(literature_content)):
+        literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+        literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+    literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+
+    if request.method == 'POST':
+        data = request.json
+        Entrez.email = 'dominik.sens@t-online.de'
+        handle = Entrez.esearch(db='pubmed',
+                                sort=str(data[1]),
+                                retmax=str(data[0]),
+                                retmode='xml',
+                                term=prediction)
+        pubmed_results = Entrez.read(handle)
+
+        id_list = pubmed_results['IdList']
+        literature = []
+        for i in id_list:
+            literature.append("https://pubmed.ncbi.nlm.nih.gov/" + str(i) + "/")
+        ids = ','.join(id_list)
+        handle = Entrez.efetch(db='pubmed',
+                                retmode='xml',
+                                id=ids)
+        papers = Entrez.read(handle)
+
+        handle2 = Entrez.efetch(db="pubmed", id=ids, rettype="medline")
+        literature_info = Medline.parse(handle2)
+        literature_info = list(literature_info)
+
+        literature_content = []
+        literature_abstract = []
+        literature_authors = []
+        literature_journal = []
+        literature_id = []
+        for paper in papers['PubmedArticle']:
+            literature_content.append(paper['MedlineCitation']['Article']['ArticleTitle'])
+            literature_abstract.append(paper['MedlineCitation']['Article']['Abstract']["AbstractText"])
+
+        for i in range(len(literature_content)):
+            literature_id.append("paper_" + str(i))
+
+        for record in literature_info:
+            literature_authors.append(record.get("AU", "?"))
+            literature_journal.append(record.get("SO", "?"))
+
+        for i in range(len(literature_authors)):
+            literature_authors[i] = " ,".join(literature_authors[i])
+
+
+        for i in range(len(literature_abstract)):
+            literature_abstract[i] = " ".join(literature_abstract[i])
+
+        CLEANR = re.compile('<.*?>')
+
+        for i in range(len(literature_content)):
+            literature_content[i] = re.sub(CLEANR, '', literature_content[i])
+            literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
+
+        literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+        return json.dumps(literature_all)
+
+    return render_template('species2.html',
+                            results_ct=values_sorted,
+                            hits_ct = hits_ct,
+                            clonetypes=clonetypes_sorted,
+                            results_claast=values_claast,
+                            hits_claast = hits_claast,
+                            clonetypes_claast=clonetypes_claast,
+                            filename=filename,
+                            maxi = 1,
+                            time=session.get('time'),
+                            prediction=prediction,
+                            prediction_claast=prediction_claast,
+                            literature_all=literature_all)
