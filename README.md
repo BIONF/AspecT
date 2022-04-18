@@ -112,6 +112,12 @@ python Add_Species NewSpecies1 NewSpecies2
 # Setup
 ### Python Modules - Install Requirements
 Using a virtual environment is recommended. The 64 bit Version of Python is required.
+
+On Linux you need the python-dev package
+```
+sudo apt install python3.10-dev
+```
+
 ```
 pip install -r requirements.txt
 ```
