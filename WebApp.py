@@ -242,9 +242,18 @@ def assign():
             score_oxa, names_oxa = single_oxa(reads, ext)
             session['vals_oxa'] = score_oxa
             session['names_oxa'] = names_oxa
+            session['vals_ct'] = [0,0,0,0,0,0,0,0]
+            session['names_ct'] = ["IC1", "IC2", "IC3", "IC4", "IC5", "IC6", "IC7", "IC8"]
+            session['hits_ct'] = [0,0,0,0,0,0,0,0]
 
         else:
-            pass
+            print("Test")
+            session['vals_oxa'] = "None"
+            session['names_oxa'] = "None"
+            session['vals_ct'] = [0,0,0,0,0,0,0,0]
+            session['names_ct'] = ["IC1", "IC2", "IC3", "IC4", "IC5", "IC6", "IC7", "IC8"]
+            session['hits_ct'] = [0,0,0,0,0,0,0,0]
+
             # Nothing happens
 
     else:
@@ -266,6 +275,8 @@ def assign():
             session['vals_ct'] = score_ct
             session['names_ct'] = names_ct
             session['hits_ct'] = hits_ct
+            session['vals_oxa'] = "None"
+            session['names_oxa'] = "None"
 
         # making prediction
         prediction = classify(r'Training_data/Training_data_IC.csv', score_ct, IC_lookup)
@@ -283,6 +294,7 @@ def assign():
     end = time.time()
     needed = round(end - start, 2)
     session['time'] = str(needed)
+    print("Time needed: ", needed)
 
     app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
     return redirect('/results')
@@ -298,6 +310,7 @@ def assignspec():
     filename = session.get('filename', None)
     quick = session.get('quick')
     added = session.get('added', None)
+    oxa = session.get('OXA', None)
     start = time.time()
 
     if not(os.path.exists(filename)):
@@ -327,9 +340,18 @@ def assignspec():
     # starts the lookup for a given sequence
     score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master)
     # storing values in session for creating plot
-    session['vals_ct'] = score_ct
-    session['names_ct'] = names_ct
-    session['hits_ct'] = hits_ct
+    session['vals_ct_spec'] = score_ct
+    session['names_ct_spec'] = names_ct
+    session['hits_ct_spec'] = hits_ct
+
+    if oxa:
+        score_oxa, names_oxa = single_oxa(reads, ext)
+        session['vals_oxa_spec'] = score_oxa
+        session['names_oxa_spec'] = names_oxa
+    else:
+        session['vals_oxa_spec'] = "None"
+        session['names_oxa_spec'] = "None"
+
     # making prediction
     prediction = classify(r'Training_data/Training_data_spec.csv', score_ct, True)
     prediction_claast = prediction
@@ -394,9 +416,10 @@ def species():
     if request.method == 'POST':
         data = request.json
         if data is not None:
-            filename = data[-2]
-            session['quick'] = data[-1]
-            del data[-2:]
+            filename = data[-3]
+            session['quick'] = data[-2]
+            session['OXA'] = data[-1]
+            del data[-3:]
 
             name = r'files/' + str(secrets.token_hex(8)) + filename + '.txt'
 
@@ -416,6 +439,8 @@ def species():
             abort(400)
     return render_template('species.html',
                             added = added,
+                            results_oxa=[0,0,0,0],
+                            oxas="None",
                             results_ct = [0,0,0,0,0,0,0,0,0,0],
                             hits_ct = [0,0,0,0,0,0,0,0,0,0],
                             clonetypes=[0,0,0,0,0,0,0,0,0,0],
@@ -764,14 +789,17 @@ def resultsspec():
     """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
 
     # Values of clonetypes, is None if not existing
-    values_ct = session.get('vals_ct')
-    hits_ct = session.get('hits_ct')
-    clonetypes = session.get('names_ct')
+    values_ct = session.get('vals_ct_spec')
+    hits_ct = session.get('hits_ct_spec')
+    clonetypes = session.get('names_ct_spec')
     values_claast = session.get('vals_claast')
     hits_claast = session.get('hits_claast')
     clonetypes_claast = session.get('names_claast')
     prediction = session.get('prediction')
     prediction_claast = session.get('prediction_claast')
+    # Values of OXAs
+    values_oxa = session.get('vals_oxa_spec')
+    oxa_names = session.get('names_oxa_spec')
 
     filename = session.get('filename')[22:]
     filename = os.path.splitext(filename)[0]
@@ -906,6 +934,8 @@ def resultsspec():
         return json.dumps(literature_all)
 
     return render_template('species.html',
+                           results_oxa=values_oxa,
+                           oxas=oxa_names,
                            results_ct=values_sorted,
                            hits_ct = hits_ct,
                            clonetypes=clonetypes_sorted,
@@ -1067,6 +1097,8 @@ def resultsspecbaumannii():
         return json.dumps(literature_all)
 
     return render_template('species2.html',
+                            results_oxa=values_oxa,
+                            oxas=oxa_names,
                             results_ct=values_sorted,
                             hits_ct = hits_ct,
                             clonetypes=clonetypes_sorted,

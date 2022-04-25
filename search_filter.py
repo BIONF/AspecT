@@ -96,6 +96,30 @@ def read_search(IC_lookup, reads, quick, pipe=None):
         return score, names, hits
 
 
+def pre_processing_ClAssT():
+    "Preprocesses the Bloomfilter-Matrix when the program is launched"
+    with open(r'filter/FilterClonetypes.txt', 'rb') as fp:
+        clonetypes = pickle.load(fp)
+    # initialising filter with database parameters
+    # kmer20 = 115000000
+    # kmer31 = 122000000
+    BF = BF_v2.AbaumanniiBloomfilter(123000000)
+    BF.set_arraysize(123000000)
+    BF.set_hashes(7)
+    BF.set_k(20)
+    #paths = sorted(os.listdir(r"filter/species/"))
+    paths = [r'filter/IC1.txt',
+             r'filter/IC2.txt',
+             r'filter/IC3.txt',
+             r'filter/IC4.txt',
+             r'filter/IC5.txt',
+             r'filter/IC6.txt',
+             r'filter/IC7.txt',
+             r'filter/IC8.txt']
+    BF.read_clonetypes(paths, clonetypes)
+    return BF
+
+
 def pre_processing():
     "Preprocesses the Bloomfilter-Matrix when the program is launched"
     with open(r'filter/FilterSpecies.txt', 'rb') as fp:
@@ -127,10 +151,32 @@ def read_search_spec(reads, quick, BF):
     return score, names, hits
 
 
+def pre_processing_oxa():
+    # getting filters
+    paths = sorted(os.listdir(r"filter/OXAs/"))
+    oxas = []
+    for i in paths:
+        oxas.append(i[:-4])
+
+    for i in range(len(paths)):
+        paths[i] = r"filter/OXAs/" + paths[i]
+
+    # initialising filter with database parameters
+    BF = BF_v2.AbaumanniiBloomfilter(80000)
+    BF.set_arraysize(80000)
+    BF.set_clonetypes(len(paths))
+    BF.set_hashes(7)
+    BF.set_k(20)
+    # User Options
+    # reading single OXA filters
+    BF.read_clonetypes(paths, oxas)
+    return BF
+
+
 def single_oxa(reads, ext, pipe=None):
     """Uses the Bloomfilter module to lookup the OXA-genes"""
     # getting filters
-    paths = os.listdir(r"filter/OXAs/")
+    paths = sorted(os.listdir(r"filter/OXAs/"))
     oxas = []
     for i in paths:
         oxas.append(i[:-4])

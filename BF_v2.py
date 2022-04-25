@@ -476,13 +476,17 @@ class AbaumanniiBloomfilter:
         else:
             # fasta mode
             # Altes testen mit Genom, hits per filter ausgeben lassen
-            self.oxa_search_genomes(reads)
+            #self.oxa_search_genomes(reads)
+            #self.oxa_search_genomes_v2(reads)
+            self.oxa_search_genomes_v3(reads)
             for r in range(len(reads)):
                 # building reverse complement
                 reads[r] = Seq(reads[r])
                 reads[r] = reads[r].reverse_complement()
             # lookup reverse complement
-            self.oxa_search_genomes(reads)
+            #self.oxa_search_genomes(reads)
+            #self.oxa_search_genomes_v2(reads)
+            self.oxa_search_genomes_v3(reads)
 
         # cleanup
         reads = None
@@ -503,6 +507,71 @@ class AbaumanniiBloomfilter:
                             self.lookup(kmer, True)
                 else:
                     pass
+
+
+    def oxa_search_genomes_v2(self, genome):
+        for i in genome:
+            j = 0
+            success = False
+            while(j < len(i)):
+                hits = sum(self.hits_per_filter)
+                kmer = i[j:j+self.k]
+                self.lookup(kmer, True)
+                if success == False:
+                    if sum(self.hits_per_filter) > hits:
+                        for n in range(j - 19, j + 20, 1):
+                            if 0 <= j < len(i):
+                                kmer = i[n:n + self.k]
+                                self.lookup(kmer, True)
+                        j += 40
+                        success = True
+                    else:
+                        j += 20
+                        success = False
+                else:
+                    if sum(self.hits_per_filter) > hits:
+                        for n in range(j, j + 20, 1):
+                            if 0 <= j < len(i):
+                                kmer = i[n:n + self.k]
+                                self.lookup(kmer, True)
+                        j += 40
+                        success = True
+                    else:
+                        j += 20
+                        success = False
+
+
+    def oxa_search_genomes_v3(self, genome):
+        for i in genome:
+            j = 0
+            success = False
+            while(j < len(i)):
+                hits = sum(self.hits_per_filter)
+                kmer = i[j:j+self.k]
+                self.lookup(kmer, True)
+                if success == False:
+                    if sum(self.hits_per_filter) > hits:
+                        # 1024 (longest oxa-gene) - 19
+                        for n in range(j - 19, j + 1005, 1):
+                            if 0 <= j < len(i):
+                                kmer = i[n:n + self.k]
+                                self.lookup(kmer, True)
+                        j += 1005
+                        success = True
+                    else:
+                        j += 20
+                        success = False
+                else:
+                    if sum(self.hits_per_filter) > hits:
+                        for n in range(j, j + 1005, 1):
+                            if 0 <= j < len(i):
+                                kmer = i[n:n + self.k]
+                                self.lookup(kmer, True)
+                        j += 1005
+                        success = True
+                    else:
+                        j += 20
+                        success = False
 
 
     def get_oxa_score(self):

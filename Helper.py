@@ -9,6 +9,7 @@ from collections import Counter
 from Bio import SeqIO, SeqRecord, Seq
 import csv
 import Classifier
+from OXA_Table import OXATable
 #from Bio.Seq import Seq
 
 # Help-Script to generate new default Data, manually train new Bloomfilter, generate svm-data and test the tools
@@ -494,7 +495,7 @@ def main():
     #opene()
     #openspec()
     #write_file2()
-    #pw()
+    pw()
     #train_Core()
     #write_file3()
     #write_file4()
@@ -503,7 +504,7 @@ def main():
     #distinct_kmer()
     #coverage_plot()
     #csv_helper()
-    test_genomes()
+    #test_genomes()
     #test()
 
 if __name__ == '__main__':

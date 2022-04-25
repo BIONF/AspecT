@@ -86,7 +86,7 @@ def cut_csv_spec(csv_file):
     X_train = []
     y_train = []
 
-    # creating matrix as input for the classifier 
+    # creating matrix as input for the classifier
     for i in range(len(m)):
         X_train.append(m[i][1:-1])
         y_train.append(m[i][-1])
@@ -100,15 +100,21 @@ def classify(csv_file, result, lst):
     m = list(r)
     # deciding which kernel-function will be used
     if m[0][1] == "IC1":
+        mode = "ClAssT"
         X_train, y_train = cut_csv(csv_file, lst)
         svm = SVC(kernel='poly', C=1.0).fit(X_train, y_train)
     else:
+        mode = "XspecT"
         X_train, y_train = cut_csv_spec(csv_file)
         svm = SVC(kernel='rbf', C=1.5).fit(X_train, y_train)
     # perform a prediction using the svm
     prediction = svm.predict([result])
-    if max(result) < 0.3:
-        prediction = ["sp.", 0]
+    if mode == "XspecT":
+        if max(result) < 0.3:
+            prediction = ["sp.", 0]
+    else:
+        if max(result) < 0.3:
+            prediction = ["none", 0]
 
     return prediction[0]
 
