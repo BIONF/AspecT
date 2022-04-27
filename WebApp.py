@@ -1111,3 +1111,5 @@ def resultsspecbaumannii():
                             prediction=prediction,
                             prediction_claast=prediction_claast,
                             literature_all=literature_all)
+
+webbrowser.open('http://127.0.0.1:5000/')
