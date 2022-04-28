@@ -194,6 +194,7 @@ async function asyncCallspec(ext) {
 
   // saving checkbox info so the Form can be hidden
   checks.push(document.getElementById("quick").checked);
+  checks.push(document.getElementById("OXA").checked);
   //checks.push(document.getElementById("added").checked);
   // Deactivating Checkboxes etc while extracting reads
   document.getElementById("opt").style.display = "none";
@@ -201,6 +202,9 @@ async function asyncCallspec(ext) {
   // Complete fileupload (Max 100.000 lines) if fasta file
   if ((ext == 'fasta') || (ext == 'fna')){
     max_reads = 100000;
+  }
+  if (((ext == 'fq') || (ext == 'fastq')) && (document.getElementById("OXA").checked)){
+    max_reads = 250000;
   }
 
   // Assigning
@@ -255,20 +259,171 @@ $(document).ready(function () {
             dataType : 'json',
             data : js_data,
             success: function(){
-            document.getElementById("content").style.display = "none";
-            document.getElementById("loading-display").style.display = "block";
+          //  document.getElementById("content").style.display = "none";
+        //    document.getElementById("loading-display").style.display = "block";
             window.location.href = '/assign'
 
          },
             error: function() {
-                document.getElementById("opt").style.display = "block";
-                document.getElementById("extracter").style.display = "none";
-                document.getElementById("loading-display").style.display = "none";
+              //  document.getElementById("opt").style.display = "block";
+              //  document.getElementById("extracter").style.display = "none";
+              //  document.getElementById("loading-display").style.display = "none";
                 alert("Your Browser does not support this Tool. Please use a valid Browser");
             }
         });
     });
 });
+
+
+
+function myFunc(literature){
+    for (let i = 0; i < literature[0].length; i++) {
+        const test1 = document.createElement("li");
+        const test2 = document.createElement("p");
+        test2.style.lineHeight = "75%";
+        const test3 = document.createElement("a");
+        test3.setAttribute('href',literature[0][i]);
+        test3.innerText = literature[1][i];
+        const test4 = document.createElement("a");
+        test4.className = "btn";
+        test4.setAttribute("data-bs-toggle", "collapse");
+        test4.setAttribute("data-bs-target", "#" + literature[5][i]);
+        const test5 = document.createElement("small");
+        test5.innerText = "[View Details]";
+        const test6_1 = document.createElement("br");
+        const test6_2 = document.createElement("br");
+        const test6_3 = document.createElement("br");
+        //const test6_4 = document.createElement("br");
+        //const test6_5 = document.createElement("br");
+        const test7 = document.createElement("small");
+        const test8 = document.createElement("small");
+        const test9 = document.createElement("font");
+        test9.setAttribute('color',"4d8055");
+        const test6 = document.createElement("br");
+        const test10 = document.createElement("p");
+        test10.className = "collapse";
+        test10.setAttribute('id', literature[5][i]);
+        const test11 = document.createElement("b");
+        test11.innerText = "Abstract:"
+
+        test10.appendChild(test11);
+        test10.appendChild(test6);
+        var newContent = document.createTextNode(literature[2][i]);
+        test10.appendChild(newContent);
+
+        var newContent = document.createTextNode(literature[4][i]);
+        test9.appendChild(newContent);
+        test8.appendChild(test9);
+        var newContent = document.createTextNode(literature[3][i]);
+        test7.appendChild(newContent);
+        test4.appendChild(test5);
+
+        test2.appendChild(test3);
+        test2.appendChild(test4);
+        test2.append(test6_1);
+        test2.appendChild(test7);
+        test2.append(test6_2);
+        test2.append(test6_3);
+      //  test2.append(test6_4);
+        //test2.append(test6_5);
+        test2.appendChild(test8);
+
+        test1.appendChild(test2);
+        test1.appendChild(test10);
+
+        document.getElementById("literature").appendChild(test1);
+      }
+      return literature
+    }
+
+
+$(document).ready(function(){
+  $("#close_popup").on("click", async function() {
+    event.preventDefault();
+    document.getElementById("popup-1").classList.toggle("active");
+  });
+});
+
+
+$(document).ready(function(){
+  $("#tab-3").on("click", async function() {
+    event.preventDefault();
+    if (document.getElementById("popup-2").classList == "popup-2 active") {
+    document.getElementById("popup-2").classList.remove("active");
+}
+  });
+});
+
+
+$(document).ready(function(){
+  $("#Display_options").on("click", async function() {
+    event.preventDefault();
+    document.getElementById("popup-2").classList.toggle("active");
+  });
+});
+
+
+
+$(document).ready(function(){
+        $("#infile").change(function(){
+          name = document.getElementById('infile').files[0].name;
+          if (document.getElementById("popup-1").classList == "popup") {
+          document.getElementById("popup-1").classList.add("active");
+    }
+          ext = name.split('.').pop();
+          if ((ext == 'fq') || (ext == 'fastq')){
+              y = document.getElementById("AspecTinput");
+              y.style.display = "block";
+              }
+          else {
+              y = document.getElementById("AspecTinput");
+              y.style.display = "none";
+          }
+          if ((ext == 'fasta') || (ext == 'fna')){
+              y = document.getElementById("AspecTinput-2");
+              y.style.display = "block";
+              }
+          else {
+              y = document.getElementById("AspecTinput-2");
+              y.style.display = "none";
+          }
+        });
+    });
+
+
+$(document).ready(function(literature) {
+    $("#apply").on("click", async function() {
+      // prevent default send
+      event.preventDefault();
+      document.getElementById("popup-2").classList.toggle("active");
+    //  const clear_literature = document.getElementById("literature");
+    //  clear_literature.innerHTML = '';
+
+      var js_data1 = document.getElementById("literature_max").value;
+      var js_data2 = document.getElementById("id_sort").value;
+      const js_data = JSON.stringify([js_data1, js_data2]);
+
+      $.ajax({
+          url: '/resultsspec',
+          type : 'post',
+          contentType: 'application/json; charset=utf-8',
+          dataType : 'json',
+          data : js_data,
+          success: function(data){
+            const clear_literature = document.getElementById("literature");
+            clear_literature.innerHTML = '';
+            myFunc(data);
+
+         },
+          error: function() {
+            const clear_literature = document.getElementById("literature");
+            clear_literature.innerHTML = '';
+            myFunc(data);
+            }
+      });
+      });
+    });
+
 
 $(document).ready(function () {
     $("#submitspec").on("click", async function() {
@@ -301,11 +456,13 @@ $(document).ready(function () {
 
         // Getting Reads
         var js_data = JSON.stringify(await asyncCallspec(ext));
+        console.log(typeof js_data)
 
         if (js_data == null){
             alert('Error: This Tool does not support your Browser, please use a modern Browser.');
             return;
         }
+
 
         $.ajax({
             url: '/species',
@@ -314,9 +471,9 @@ $(document).ready(function () {
             dataType : 'json',
             data : js_data,
             success: function(){
-            document.getElementById("content").style.display = "none";
-            document.getElementById("loading-display").style.display = "block";
-            window.location.href = '/assignspec'
+            //document.getElementById("content").style.display = "none";
+            //document.getElementById("loading-display").style.display = "block";
+            window.location.href = '/assignspec';
 
          },
             error: function() {
@@ -326,5 +483,6 @@ $(document).ready(function () {
                 alert("Your Browser does not support this Tool. Please use a valid Browser");
             }
         });
+
     });
 });
