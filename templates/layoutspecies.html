@@ -81,7 +81,7 @@
                         <div id="AspecTinput-2" style="display:none">
                         <p><input type="checkbox" name="quick" id="quick" Checked/>Quick-search</p>
                         </div>
-                        <input type="checkbox" name="OXA" id = "OXA"/> Oxa-Genes <br><br>
+                        <input type="checkbox" name="OXA" id="OXA"/> Oxa-Genes <br><br>
                         <button class="btn btn-primary"  name="submit" id="submitspec">submit</button>
                         <p> </p>
                       </div>
@@ -294,8 +294,62 @@
             </div>
             <div class="tab-pane fade" id="nav-oxa" role="tabpanel" aria-labelledby="nav-oxa-tab">
               <div class="span4 collapse-group" style="text-align: left">
-                Test
+                <div class="media-body">
+                  <br>
+                    <h2 style="text-align:center; color:rgba(33, 3, 201, 1)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
+                    <p> </p>
+                    <h4 style="text-align:center;"> Percentage of found k-meres in the reference-data</h4>
+                    <p style="text-align:center;"> A OXA-Family is most likely seen as present if it passes a threshold of 0.3 .</p>
+                    <div style = "text-align:center;">
+                        <!-- https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#4-radar-chart -->
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                      <canvas id="oxa-chart" width="750" height="375"></canvas>
+                          <script>
+                          // Source:
+                          //https://stackoverflow.com/questions/40254027/horizontal-bar-chart-in-chart-js
+                            var myChart2 = new Chart(document.getElementById("oxa-chart"), {
+                              type: 'horizontalBar',
+                              data: {
+                                labels: {{ oxas|tojson }},
+                                datasets: [
+                                  {
+                                    label: "percentege of found k-meres in reference-data",
+                                    backgroundColor: "rgba(33, 3, 201, 1)",
+                                    //hoverBackgroundColor: "rgba(33, 3, 201, 1)",
+                                    data: {{ results_oxa }}
+                                  }
+                                ]
+                              },
+                              options: {
+                                  scales: {
+                                      xAxes: [{
+                                          ticks: {
+                                              min: 0,
+                                              max: 1
+                                          }
+                                      }],
+                                      yAxes: [{
+                                          stacked: true
+                                      }]
+                                  },
+                                  animation: {
+                                    onComplete: function() {
+                                      //  this.options.animation.onComplete = null;
+                                        var plot_image_oxa = myChart2.toBase64Image();
+                                        document.getElementById("download_oxa").href = plot_image_oxa;
+                                }
+                              }
+                              },
+                          });
+                          </script>
+                    </div>
+                    <p> </p>
+                </div>
               </div>
+              <br>
+              <a id="download_oxa" download='bla-OXA.png' class="download-btn">Download Plot
+                <i class="fa fa-download"></i>
+                </a>
               </div>
             </div>
           </div>
@@ -314,6 +368,9 @@
   }
   if ({{prediction_claast | tojson}} != "n/a") {
     document.getElementById("nav-profile-tab").classList.remove('disabled');
+  }
+  if ({{oxas | tojson}} != "None") {
+    document.getElementById("nav-oxa-tab").classList.remove('disabled');
   }
 
   </script>
