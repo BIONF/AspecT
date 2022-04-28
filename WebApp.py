@@ -33,6 +33,8 @@ app.config.from_pyfile(r'config/settings.cfg')
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 
+
+
 # Login System is needed, otherwise the login can be skipped and
 # the add/remove filter function is for everyone
 with open(r'config/login.txt', 'rb') as fp:
@@ -44,6 +46,7 @@ with open(r'config/login.txt', 'rb') as fp:
 #pre process the BF
 global BF_Master
 BF_Master = pre_processing()
+
 
 
 @app.errorhandler(404)
