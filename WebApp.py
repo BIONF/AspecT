@@ -17,6 +17,7 @@ import pickle
 import Add_Species
 from Bio import Entrez, Medline
 import re
+import webbrowser
 
 # Source Logging and Error Handling
 # https://flask.palletsprojects.com/en/1.1.x/logging/
