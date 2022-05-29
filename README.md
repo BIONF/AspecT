@@ -1,5 +1,5 @@
 # XspecT - Acinetobacter Species Assignment Tool
-<img src="https://github.com/BIONF/XspecT/blob/main/static/Logo.png" height="50%" width="50%">
+<img style="text-align:center" src="https://github.com/BIONF/XspecT/blob/main/static/Logo.png" height="50%" width="50%">
 
 XspecT is a Python-based tool to taxonomically classify [Acinetobacter](https://en.wikipedia.org/wiki/Acinetobacter) sequence-reads (or assembled genomes) on the species and/or sub-type level using [Bloom Filters](https://en.wikipedia.org/wiki/Bloom_filter) and a [Support Vector Machine](https://en.wikipedia.org/wiki/Support-vector_machine). It also identifies existing [blaOxa-genes](https://en.wikipedia.org/wiki/Beta-lactamase#OXA_beta-lactamases_(class_D)) and provides a list of relevant research paper for further information.
 <br/><br/>
