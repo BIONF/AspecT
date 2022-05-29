@@ -13,7 +13,7 @@ Local extensions of the reference database is supported.
 
 The tool is available as a web-based application and a smaller command line interface.
 
-
+## Table of Content
 - [Installation and Usage](#installation-and-usage)
     + [Python Modules - Install Requirements](#python-modules---install-requirements)
     + [List of used Modules for Python (3.10):](#list-of-used-modules-for-python--310--)
