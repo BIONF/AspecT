@@ -24,11 +24,12 @@ About this project
 #### Python Modules - Install Requirements
 XspecT requires the latest 64 bit Python version and a list of Python Modules (see below).
 On Linux you need the python-dev package:
-
+```
 sudo apt install python3.10-dev
-
+```
+```
 pip install -r requirements.txt
-
+```
 #### List of used Modules for Python (3.10):
 - Flask
 - Flask-Bcrypt
