@@ -30,20 +30,20 @@ sudo apt install python3.10-dev
 pip install -r requirements.txt
 
 #### List of used Modules for Python (3.10):
-Flask
-Flask-Bcrypt
-Flask-Login
-Flask-WTF
-WTForms
-Werkzeug
-Bcrypt
-Biopython
-bitarray
-mmh3
-numpy
-pandas
-requests
-scikit-learn
+- Flask
+- Flask-Bcrypt
+- Flask-Login
+- Flask-WTF
+- WTForms
+- Werkzeug
+- Bcrypt
+- Biopython
+- bitarray
+- mmh3
+- numpy
+- pandas
+- requests
+- scikit-learn
 
 #### How to run the web-app: Local Deployment
 Run the following command lines in a console, a browser window will open automatically after the application is fully loaded.
@@ -73,10 +73,10 @@ The amount of reads that will be used has to be set by the user when using seque
 A detailed walkthrough with examples is provided in Xspect’s wiki.
 
 ## Contributors
-<b>Sam Gimbel
-<b>Bardja Djahinschiri
-<b>Vinh Tran
-<b>Ingo Ebersberger
+- Sam Gimbel
+- Bardja Djahinschiri
+- Vinh Tran
+- Ingo Ebersberger
 
 ## About this project
 This project is an attempt to support hospital staff in a possible A. baumannii outbreak. A. baumannii can build up antibiotic resistance and can cause deadly nosocomial infections.
