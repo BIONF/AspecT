@@ -1,6 +1,6 @@
 # XspecT - Acinetobacter Species Assignment Tool
 <p align="center">
-<img src="https://github.com/BIONF/XspecT/tree/main/static/pictures/Logo.png" height="50%" width="50%">
+<img src="https://github.com/BIONF/XspecT/blob/main/static/Logo.png" height="50%" width="50%">
 </p>
 
 XspecT is a Python-based tool to taxonomically classify Acinetobacter sequence-reads (or assembled genomes) on the species and/or sub-type level using Bloom Filters and a Support Vector Machine. It also identifies existing blaOxa-genes and provides a list of relevant research paper for further information.
