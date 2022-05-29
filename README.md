@@ -49,11 +49,11 @@ scikit-learn
 Run the following command lines in a console, a browser window will open automatically after the application is fully loaded.
 
 MAC/Linux:
-
+```
 $ export FLASK_APP=flaskr
 $ export FLASK_ENV=development
 $ python app.py
-
+```
 Windows cmd:
 
 set FLASK_APP=flaskr
