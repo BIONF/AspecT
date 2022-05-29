@@ -4,9 +4,12 @@
 </p>
 XspecT is a Python-based tool to taxonomically classify Acinetobacter sequence-reads (or assembled genomes) on the species and/or sub-type level using Bloom Filters and a Support Vector Machine. It also identifies existing blaOxa-genes and provides a list of relevant research paper for further information.
 
+
 XspecT utilizes the uniqueness of kmers and compares extracted kmers from the input-data to a reference database. Bloom Filter ensure a fast lookup in this process. For a final prediction the results are classified using a Support Vector Machine. 
 
+
 Local extensions of the reference database is supported.
+
 
 The tool is available as a web-based application and a smaller command line interface.
 
