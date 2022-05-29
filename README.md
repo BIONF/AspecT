@@ -1,215 +1,86 @@
-# ClAssT - Clone-type Assignment Tool for A.baumannii
-# AspecT - Acinetobacter Species Assignment Tool
-
-ClAssT and AspecT are both using Bloom Filters and Support Vector Machines to classify sequence-reads (.fq-files) or assembled genomes (.fasta or .fna files).
-ClAssT assigns the input-data to one of the eight International Clones (IC) of A.baumannii, if the input sequence is part of any of the eight clones.
-AspecT assigns the input-data to one of the 82 Acinetobacter species, if the input-data is similar enough to one specie.
-The tool is web-based.
-
-## How ClAssT works
-
-![alt text](https://github.com/BIONF/AspecT/blob/main/static/Workflow_ClAssT.png)
-
-The tool uses Bloom Filters to store IC-specific reference k-meres. The k-meres of the input-sequences will be checked for membership in all of the selected IC's. Hits are counted and then divided by the number of total tested k-meres of the input-sequence. This produces a 'Score-Vector' with values between 0 and 1. This Vector will then be classified by Support Vector Machines (SVM).
-
-If you are using sequence-reads for this analysis, then you can avoid the assembly-process. On the other hand, this tool need high quality sequence-reads because its using exact matches of k-meres.
-
-The requirements are down below and in the requirements.txt file.
-
-For security reasons, you need to set up an individual security key and a username/password for a login. More information in the following instructions.
-You can find the code of the original ClAssT-Project [here](https://github.com/w0rt0x/ClAssT-Acinetobacter-baumannii-Clone-type-Assignment-Tool) .
-
-## How to use ClAssT
-### Assigning Files
-  <b> 1) Choose a file and submit</b><br>
-  <b> 2) wait </b><br>
-  <b> 3) get Results </b><br>
+# XspecT - Acinetobacter Species Assignment Tool
 <p align="center">
-  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/How2Use.png" height="50%" width="50%">
+<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/Logo.png" height="50%" width="50%">
 </p>
 
-## Modify the Tool
-Searchable Filters can be added or removed in the 'Export Options'- section on the website. Login to that area (see section 'Change Password and Username' in this readme) and follow the upcoming steps.
+XspecT is a Python-based tool to taxonomically classify Acinetobacter sequence-reads (or assembled genomes) on the species and/or sub-type level using Bloom Filters and a Support Vector Machine. It also identifies existing blaOxa-genes and provides a list of relevant research paper for further information.
 
-### Adding Genomes
-1) Choose a name
-2) Select the file that contains the genome from your computer
-3) Add/Expand the SVM Training-Vectors: <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.1) Change the 'Score_new' to the corresponding value between 0 and 1 <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.2) Add the new Score-Vectors of the genome with the corresponding value between 0 and 1. <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The format must be ['Filename', Score-IC1, Score-IC2,..., Score_of_new, Label] like all other vectors showen below.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The label in the last column must match the previous entered name in step 1). <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There needs to be at least one Training-Vector for the new genome. <br>
-<p align="center">
-  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddFilter.png" height="50%" width="50%">
-</p>
+XspecT utilizes the uniqueness of kmers and compares extracted kmers from the input-data to a reference database. Bloom Filter ensure a fast lookup in this process. For a final prediction the results are classified using a Support Vector Machine. 
 
-### Removing Genomes
-All deletable genomes are shown. Copy the name of the one you want to delete, paste in into the text field and submit.
+Local extensions of the reference database is supported.
 
-### Add OXA-Genes
-Adding OXA-Genes is almost similar to adding genomes, but without any Score-Vectors. Add the .fasta-file with the gene, put a name into the text-field and submit.
-
-### Remove OXA-Genes
-All deletable OXA-Genes are shown. Copy the name of the one you want to delete, paste in into the text field and submit.
-
-### Modify Trainingdata for the SVM
-This function allows you to change the Trainingvectors for the SVM. There must be at least one vector per label!
-<p align="center">
-  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/modify_vecs.png" height="50%" width="50%">
-</p>
-
-## How AspecT works
-
-AspecT works roughly the same like ClAssT. For a taxonomic assignment to be performed on the species-Level the input-data is processed with the same File-Reader and the Bloom Filter are searched through the same modules. For each species up to 4 different assembled genomes (if availabe) were used as reference-data for the Bloom Filters.
-Only a small amount of k-mers are needed for the species assignment. AspecT uses only every 500th k-mere of a assembled genome and only every 10th k-mer of a sequence-read.
-The Support Vector Machine (SVM) was further adjusted using the radial basis function as kernel-function with a regularization parameter of C = 1.5
-
-## How to use AspecT
-### Assigning Files
-
-<b> 1) Choose a .fna/.fasta/.fastq-file and submit</b><br>
-<b> 2) wait (this should take just a few seconds)</b><br>
-<b> 3) get Results </b><br>
-<p align="center">
-<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/HowtouseAspecT.png" height="50%" width="50%">
-</p>
-
-## Adding new Acinetobacter Species
-If new species are discovered it is possible to add them to AspecT.
-AspecT needs reference-data for the Bloom Filter. For an accurate assignment 4 Assemblys for each new species are recommended.
-Those assemblys need to be concatenated into one File and should not contain more than ~11.9 million distinct kmers. You can use the Tool [Jellyfish](https://github.com/gmarcais/Jellyfish) to count kmers.
-
-1) Make sure that the file-name is the species-name
-2) Copy and Paste the (concatenated-)file in the folder filter/new_species
-<p align="center">
-<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddSpecies1.png" height="50%" width="50%">
-</p>
+The tool is available as a web-based application and a smaller command line interface.
 
 
+##Table of Contents
 
-### Adding Training-data
-AspecT needs Training-data (genome assemblies) for each supported species. If no separate Training-data is available you can use the Bloom Filter-Reference-Data.
-
-1) Make sure that the file-name contains an Assembly-Accession (for better readability in the csv-file)
-2) Copy and paste the file in the folder Training_data/genomes
-<p align="center">
-<img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/AddSpecies2.png" height="50%" width="50%">
-</p>
-
-### Run the script
-
-1) Run the script Add_Species.py with the species-names as additional parameters
-```
-python Add_Species NewSpecies1 NewSpecies2
-```
-2) The new added species will be trained into a Bloom Filter
-3) New SVM-Training-data will be generated
-4) After the script is finished make sure to delete the Assembly-Files from the filter/new_species Folder
-5) Restart the tool to apply the new changes
+Installation and Usage
+Input Data
+Walkthrough
+Contributors
+About this project
 
 
-# Setup
-### Python Modules - Install Requirements
-Using a virtual environment is recommended. The 64 bit Version of Python is required.
+##Installation and Usage
+###Python Modules - Install Requirements
+XspecT requires the latest 64 bit Python version and a list of Python Modules (see below).
+On Linux you need the python-dev package:
 
-On Linux you need the python-dev package
-```
 sudo apt install python3.10-dev
-```
 
-```
 pip install -r requirements.txt
-```
 
-#### List of used Modules for Python (3.8)
-Flask	1.1.2
+###List of used Modules for Python (3.10):
+Flask
+Flask-Bcrypt
+Flask-Login
+Flask-WTF
+WTForms
+Werkzeug
+Bcrypt
+Biopython
+bitarray
+mmh3
+numpy
+pandas
+requests
+scikit-learn
 
-Flask-Bcrypt	0.7.1
+###How to run the web-app: Local Deployment
+Run the following command lines in a console, a browser window will open automatically after the application is fully loaded.
 
-Flask-Login	0.5.0
+MAC/Linux:
 
-Flask-WTF	0.14.3
-
-WTForms	2.3.1
-
-Werkzeug	1.0.1
-
-bcrypt	3.1.7
-
-biopython	1.76
-
-bitarray	1.2.1
-
-mmh3	2.5.1
-
-numpy	1.18.2
-
-pandas	1.0.3
-
-requests	2.23.0
-
-scikit-learn	0.23.1
-
-### Setup
-
-#### Change Secret Key
-Because of security reasons, you need to give this tool a new Secret Key. Change the 'change_me' in the settings.cfg in the config folder to your own Secret Key :
-<p align="center">
-  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/secretkey.png" height="30%" width="30%">
-</p>
-
-You can generate a random Secret Key of variable length by using Python:
-```
->>> import os
->>> os.urandom(20)
-b'\x80\xf8\xfe\xbe\xb5t*{\x88\xdc\xb3z\x17\xacz\xeasM\xf7\xd4'
-```
-#### Change Password and Username in 'Expert Options'
-To gain or to limit the access to the 'Expert Options' you need to change the username and password by using the change_password.py script:
-<p align="center">
-  <img src="https://github.com/BIONF/AspecT/blob/main/Instructions/pictures/change_pw.png" height="50%" width="50%">
-</p>
-
-# How to run the App: Local Deployment
-
-## MAC/Linux:
-
-```
 $ export FLASK_APP=flaskr
-
 $ export FLASK_ENV=development
-
 $ python app.py
-```
 
-## Windows cmd:
+Windows cmd:
 
-```
 set FLASK_APP=flaskr
-
 set FLASK_ENV=development
-
 python app.py
-```
 
-## More about the Deployment
+To start the command line interface of XspecT use the following command line (on all OS):
 
-[Documentation](https://flask.palletsprojects.com/en/master/tutorial/factory/)
+Python XspecT_mini.py
 
-# Server Deployment
 
-[Server Deployment](https://flask.palletsprojects.com/en/master/deploying/)
+##Input Data
+XspecT is able to use either raw sequence-reads (FASTQ-format .fq/.fastq) or already assembled genomes (FASTA-format .fasta/.fna). Using sequence-reads saves up the assembly process but high-quality reads with a low error-rate are needed (e.g. Illumina-reads).
+The amount of reads that will be used has to be set by the user when using sequence-reads. The minimum amount is 5000 reads for species classification and 500 reads for sub-type classification. The maximum number of reads is limited by the browser and is usually around ~8 million reads. Using more reads will lead to a increased runtime (xsec./1mio reads).
 
-[Host a app for free by using Heroku](https://www.heroku.com/): NOT RECOMMENDED (yet) - Heroku is an easy (and free) method to host Flask Apps, but Heroku will throw [Request timeout errors](https://devcenter.heroku.com/articles/error-codes#h12-request-timeout) if the server takes longer than 30 seconds to respond. Some Options take longer than 30 seconds, therefore hosting on Heroku is problematic in this case. A job scheduler can solve this problem and is planned for the future.
+##Walkthrough
+A detailed walkthrough with examples is provided in Xspect’s wiki.
 
-# Web-Interface
-The code for the Web-interface was taken from [Corey M. Schafer](https://github.com/CoreyMSchafer/code_snippets/tree/master/Python/Flask_Blog). Some modifications have been made, sources can be found in the code.  
+##Contributors
+<b>Sam Gimbel
+<b>Bardja Djahinschiri
+<b>Vinh Tran
+<b>Ingo Ebersberger
 
-# About this project
-This project is an attempt to support hospital staff in a possible A.baumannii outbreak. A.baumannii is able to build up antibiotic resistance and can cause deadly nosocomial infections.
-
-This is a bachelor thesis project, no warranty is given. Check the licence for more information.
-
+##About this project
+This project is an attempt to support hospital staff in a possible A. baumannii outbreak. A. baumannii can build up antibiotic resistance and can cause deadly nosocomial infections.
+This is a bachelor thesis project; no warranty is given. Check the license for more information.
 constructive criticism/feedback always welcomed!
-
+  
