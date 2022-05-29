@@ -14,13 +14,15 @@ Local extensions of the reference database is supported.
 The tool is available as a web-based application and a smaller command line interface.
 
 
-## Table of Contents
-
-Installation and Usage
-Input Data
-Walkthrough
-Contributors
-About this project
+* [Table of Contents](#table-of-contents)
+  * [Installation and Usage](#installation-and-usage)
+      - [Python Modules - Install Requirements](#python-modules---install-requirements)
+      - [List of used Modules for Python (3.10):](#list-of-used-modules-for-python--310--)
+      - [How to run the web-app: Local Deployment](#how-to-run-the-web-app--local-deployment)
+  * [Input Data](#input-data)
+  * [Walkthrough](#walkthrough)
+  * [Contributors](#contributors)
+  * [About this project](#about-this-project)
 
 
 ## Installation and Usage
