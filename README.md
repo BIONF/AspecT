@@ -21,7 +21,7 @@ About this project
 
 
 ## Installation and Usage
-### Python Modules - Install Requirements
+#### Python Modules - Install Requirements
 XspecT requires the latest 64 bit Python version and a list of Python Modules (see below).
 On Linux you need the python-dev package:
 
@@ -29,7 +29,7 @@ sudo apt install python3.10-dev
 
 pip install -r requirements.txt
 
-### List of used Modules for Python (3.10):
+#### List of used Modules for Python (3.10):
 Flask
 Flask-Bcrypt
 Flask-Login
@@ -45,7 +45,7 @@ pandas
 requests
 scikit-learn
 
-### How to run the web-app: Local Deployment
+#### How to run the web-app: Local Deployment
 Run the following command lines in a console, a browser window will open automatically after the application is fully loaded.
 
 MAC/Linux:
@@ -55,15 +55,15 @@ $ export FLASK_ENV=development
 $ python app.py
 ```
 Windows cmd:
-
+```
 set FLASK_APP=flaskr
 set FLASK_ENV=development
 python app.py
-
+```
 To start the command line interface of XspecT use the following command line (on all OS):
-
+```
 Python XspecT_mini.py
-
+```
 
 ## Input Data
 XspecT is able to use either raw sequence-reads (FASTQ-format .fq/.fastq) or already assembled genomes (FASTA-format .fasta/.fna). Using sequence-reads saves up the assembly process but high-quality reads with a low error-rate are needed (e.g. Illumina-reads).
