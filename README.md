@@ -22,11 +22,11 @@ About this project
 
 ## Installation and Usage
 #### Python Modules - Install Requirements
-XspecT requires the latest 64 bit Python version and a list of Python Modules (see below).
 On Linux you need the python-dev package:
 ```
 sudo apt install python3.10-dev
 ```
+XspecT requires the latest 64 bit Python version and a list of Python Modules (see below).
 ```
 pip install -r requirements.txt
 ```
