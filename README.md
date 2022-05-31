@@ -79,7 +79,7 @@ A detailed walkthrough with examples is provided in Xspect’s wiki.
 
 ## Contributors
 - Sam Gimbel
-- Bardja Djahinschiri
+- Bardja Djahanschiri
 - Vinh Tran
 - Ingo Ebersberger
 
