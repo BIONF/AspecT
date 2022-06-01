@@ -7,7 +7,7 @@ XspecT is a Python-based tool to taxonomically classify [_Acinetobacter_](https:
 XspecT utilizes the uniqueness of kmers and compares extracted kmers from the input-data to a reference database. Bloom Filter ensure a fast lookup in this process. For a final prediction the results are classified using a Support Vector Machine. 
 <br/>
 
-Local extensions of the reference database is supported.
+Local extensions of the reference database are supported.
 <br/>
 
 The tool is available as a web-based application and a smaller command line interface.
