@@ -10,6 +10,7 @@ from Bio import SeqIO, SeqRecord, Seq
 import csv
 import Classifier
 from OXA_Table import OXATable
+import math
 #from Bio.Seq import Seq
 
 # Help-Script to generate new default Data, manually train new Bloomfilter, generate svm-data and test the tools
@@ -48,34 +49,111 @@ def write_file3():
     with open(r'filter/FilterSpecies.txt', 'wb') as fp:
         pickle.dump(itemlist, fp)
 
+def write_file4():
+    # https://stackoverflow.com/questions/899103/writing-a-list-to-a-file-with-python/899176
+    itemlist = ["whole_human_genome"]
+    with open(r'filter/FilterHuman.txt', 'wb') as fp:
+        pickle.dump(itemlist, fp)
+
+def write_file5():
+    # https://stackoverflow.com/questions/899103/writing-a-list-to-a-file-with-python/899176
+    itemlist = ["Acinetobacter_Master"]
+    with open(r'filter/FilterAcinetobacter.txt', 'wb') as fp:
+        pickle.dump(itemlist, fp)
+
 
 def train():
-    files = os.listdir(r'I:\OXA-Gene')
+    files = os.listdir(r'F:/project/Oxas/neu/')
     for i in range(len(files) -1, -1, -1):
         if 'fasta' not in files[i]:
             del files[i]
-
     for i in range(len(files)):
-
         BF = BF_v2.AbaumanniiBloomfilter(80000)
         BF.set_arraysize(80000)
         BF.set_clonetypes(1)
         BF.set_hashes(7)
         BF.set_k(20)
-        path = r'I:/OXA-Gene/' + files[i]
+        path = r'F:/project/Oxas/neu/' + files[i]
+        #file must be fasta not fna
         name = files[i][:-6] + '.txt'
         print(name)
-        result = r'C:/Users/SG/Desktop/' + name
+        result = r'F:/project/results/' + name
         BF.train_sequence(path, 0)
         BF.save_clonetypes(result)
+        # Adding kmeres
+        kmere = {}
+        for sequence in SeqIO.parse(paths[i], "fasta"):
+            for j in range(0, len(sequence.seq) - BF.k):
+                kmer = str(sequence.seq[j: j + BF.k])
+                count = kmere.get(kmer, 0)
+                kmere[kmer] = count + 1
+        file = json.load(open(r'filter/OXAs_dict/oxa_dict.txt'))
+        file[name] = kmere
+        json.dump(file, open(r'filter/OXAs_dict/oxa_dict.txt', 'w'))
+        file = None
+        # Adding counter
+        c = 0
+        for sequence in SeqIO.parse(paths[i], "fasta"):
+            c = len(sequence.seq) - BF.k + 1
+        counter = json.load(open(r'filter/OXAs_dict/counter.txt'))
+        counter[name] = c
+        json.dump(counter, open(r'filter/OXAs_dict/counter.txt', 'w'))
         BF.cleanup()
 
 
-#changed directory
+def split(a, n):
+    k, m = divmod(len(a), n)
+    return (a[i*k+min(i, m):(i+1)*k+min(i+1, m)] for i in range(n))
+
+
+def divide_and_test():
+    files = os.listdir(r'F:/project/Oxas/Oxas/OXA-24/')
+    paths = files[:]
+    for i in range(len(files)):
+        paths[i] = r'F:/project/Oxas/Oxas/OXA-24/' + paths[i]
+    filter_depth = math.log(len(paths), 10)//math.log(2, 10)
+    fasta_list = []
+    fasta_list.append(files)
+    fasta_list.append(list(split(fasta_list[0], 2)))
+    fasta_list.append(list(split(fasta_list[0], 4)))
+    #fasta_list.append(list(split(fasta_list[0], 8)))
+    #fasta_list.append(list(split(fasta_list[0], 16)))
+    #for level in range(int(filter_depth)):
+        #temp = []
+        #for i in range(len(fasta_list[-1])):
+            #temp.append(list(split(fasta_list[-1][i], 2)))
+            #list_half = []
+            #mid = len(len(fasta_list[-1][i])) // 2
+            #list_half.append(paths[:mid])
+            #list_half.append(paths[mid:])
+            #fasta_list.append(list_half)
+        #fasta_list.append(temp)
+    for i in fasta_list:
+        print(i)
+    for i in range(len(files) -1, -1, -1):
+        if 'fasta' not in files[i]:
+            del files[i]
+    sequences = ""
+    for i in range(len(files)):
+        if i == 0:
+            continue
+        #with open(paths[i]) as file:
+        for sequence in SeqIO.parse(paths[i], "fasta"):
+            sequences += str(sequence.seq)
+    #with open(r'F:/project/Oxas/Oxas/OXA-279/OXA-Test.fasta', "a") as output_handle:
+        #output_handle.write(sequences)
+
+
+def test_oxa():
+    files = os.listdir(r'F:/project/Oxas/neu/')
+    for sequence in SeqIO.parse(paths[i], "fasta"):
+        continue
+
+
 def train_Core():
     """trains (concatenated-)genomes into BF and saves them"""
     #files = os.listdir(r"filter\species_totrain")
-    files = os.listdir(r'F:\project\genomes\totrain')
+    files = os.listdir(r'F:\project\genomes\totrain2')
     for i in range(len(files) -1, -1, -1):
         if 'fna' in files[i] or 'fasta' in files[i]:
             continue
@@ -83,13 +161,18 @@ def train_Core():
             del files[i]
     for i in range(len(files)):
         #set BF-parameters
-        BF = BF_v2.AbaumanniiBloomfilter(115000000)
-        BF.set_arraysize(115000000)
+        #species size: 115000000
+        #species size + reverse: 230000000
+        #species size + reverse 21: 165000000
+        #human: 23000000000; reversed: 46000000000
+        #Aci: 3080000000
+        BF = BF_v2.AbaumanniiBloomfilter(3080000000)
+        BF.set_arraysize(3080000000)
         BF.set_clonetypes(1)
         BF.set_hashes(7)
-        BF.set_k(20)
+        BF.set_k(21)
         #path = r"filter/species_totrain/" + files[i]
-        path = r'F:/project/genomes/totrain/' + files[i]
+        path = r'F:/project/genomes/totrain2/' + files[i]
         name = files[i].split('.')[-2] + '.txt'
         print(name)
         #result = r"filter/species" + name
@@ -184,6 +267,7 @@ def csv_helper():
         writer = csv.writer(file)
         writer.writerows(files)
 
+
 def distinct_kmer():
     """ creates a fasta-file with the distinct kmers of every species """
     files = os.listdir(r'F:\project\genomes\coverage')
@@ -246,6 +330,27 @@ def coverage_plot(min_coverage=7, max_coverage=1000):
             plt.ylim(0, higher_frequency)
     plt.title("Acinetobacter-Coverage comparison with different kmer-lengths")
     plt.show()
+
+
+def count_distinct():
+    files = os.listdir(r'F:\project\genomes\totrain2')
+    for i in range(len(files) -1, -1, -1):
+        if 'fna' in files[i] or 'fasta' in files[i]:
+            continue
+        else:
+            del files[i]
+    paths = files[:]
+    for i in range(len(files)):
+        paths[i] = r'F:/project/genomes/totrain2/' + paths[i]
+    for i in range(len(files)):
+        kmers = set([])
+        for sequence in SeqIO.parse(paths[i], "fasta"):
+            for j in range(len(sequence.seq) - 21 + 1):
+                if "N" in str(sequence.seq[j: j + 21]):
+                    kmers.add(str(sequence.seq[j: j + 21]))
+                #kmers.add(str(sequence.seq[j: j + 21]))
+                #kmers.add(str(sequence.seq[j: j + 21].reverse_complement()))
+        print("Distinct kmers for ", files[i], ": ", len(kmers))
 
 
 
@@ -494,9 +599,12 @@ def main():
     #write_file()
     #opene()
     #openspec()
-    #write_file2()
-    pw()
+    #write_file5()
+    #pw()
     #train_Core()
+    #train()
+    divide_and_test()
+    #count_distinct()
     #write_file3()
     #write_file4()
     #histo()

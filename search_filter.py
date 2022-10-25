@@ -4,6 +4,7 @@ import pickle
 import glob
 import os
 from collections import Counter
+import time
 
 
 def get_added_genomes():
@@ -127,10 +128,13 @@ def pre_processing():
     # initialising filter with database parameters
     # kmer20 = 115000000
     # kmer31 = 122000000
-    BF = BF_v2.AbaumanniiBloomfilter(115000000)
-    BF.set_arraysize(115000000)
+    # kmer20+reversed 230000000
+    # kmers21 173000000
+    BF = BF_v2.AbaumanniiBloomfilter(173000000)
+    BF.set_arraysize(173000000)
     BF.set_hashes(7)
-    BF.set_k(20)
+    BF.set_k(21)
+    #paths = sorted(os.listdir(r"filter/species_reversed/"))
     paths = sorted(os.listdir(r"filter/species/"))
     for i in range(len(paths)):
         paths[i] = r"filter/species/" + paths[i]
@@ -138,10 +142,94 @@ def pre_processing():
     return BF
 
 
+def pre_processing_prefilter():
+    "Preprocesses the Bloomfilter-Matrix when the program is launched"
+    with open(r'filter/FilterHuman.txt', 'rb') as fp:
+        clonetypes = pickle.load(fp)
+    # initialising filter with database parameters
+    BF = BF_v2.AbaumanniiBloomfilter(23000000000)
+    BF.set_arraysize(23000000000)
+    BF.set_hashes(7)
+    BF.set_k(20)
+    paths = sorted(os.listdir(r"filter/human/"))
+    for i in range(len(paths)):
+        paths[i] = r"filter/human/" + paths[i]
+    BF.read_clonetypes(paths, clonetypes)
+    return BF
+
+
+def pre_processing_prefilter2():
+    "Preprocesses Acinetobacter Prefilter, collapse with other prefilter after testing"
+    with open(r'filter/FilterHuman.txt', 'rb') as fp:
+        clonetypes = pickle.load(fp)
+    # initialising filter with database parameters
+    BF = BF_v2.AbaumanniiBloomfilter(3080000000)
+    BF.set_arraysize(3080000000)
+    BF.set_hashes(7)
+    BF.set_k(21)
+    paths = sorted(os.listdir(r"filter/acinetobacter/"))
+    for i in range(len(paths)):
+        paths[i] = r"filter/acinetobacter/" + paths[i]
+    BF.read_clonetypes(paths, clonetypes)
+    return BF
+
+
+def read_search_pre(reads, BF_pre):
+    reads_new = []
+    for single_read in reads:
+        read_kmers = []
+        k1 = single_read[0:BF_pre.k]  # first k-mer
+        k2 = single_read[len(single_read) - BF_pre.k:]  # last k-mer
+        mid = len(single_read) // 2
+        k3 = single_read[mid:mid + BF_pre.k]  # k-mer in middle
+        k4 = single_read[BF_pre.k:BF_pre.k * 2]
+        k5 = single_read[mid + BF_pre.k:mid + BF_pre.k * 2]
+        # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
+        # then the read won't be tested further
+        hit_sum = sum(BF_pre.hits_per_filter)
+        hits_per_filter_copy = BF_pre.hits_per_filter[:]
+        if "N" not in single_read:
+            BF_pre.lookup(k1)
+            BF_pre.lookup(k2)
+            BF_pre.lookup(k3)
+            BF_pre.lookup(k4)
+            BF_pre.lookup(k5)
+        # needs at least 2 of 3 hits to continue with read
+        if (sum(BF_pre.hits_per_filter) - hit_sum) > 3:
+            for j in range(len(single_read) - BF_pre.k):
+                if "N" not in single_read[j: j + BF_pre.k]:
+                    read_kmers.append(single_read[j: j + BF_pre.k])
+            reads_new.append(read_kmers)
+            BF_pre.hits_per_filter = hits_per_filter_copy
+        else:
+            # resetting hit counter
+            BF_pre.hits_per_filter = hits_per_filter_copy
+    reads_filtered = set()
+    threshold_dic = {}
+    for i in range(len(reads_new)):
+        read_kmers_filtered = []
+        threshold = 0
+        temp = []
+        for j in range(len(reads_new[i])):
+            BF_pre.number_of_kmeres += 1
+            hits_per_filter_copy = BF_pre.hits_per_filter[:]
+            BF_pre.lookup(reads_new[i][j])
+            if hits_per_filter_copy != BF_pre.hits_per_filter:
+                threshold += 1
+                temp.append(reads_new[i][j])
+        count = threshold_dic.get(threshold, 0)
+        threshold_dic[threshold] = count + 1
+        if threshold >= 80:
+            reads_filtered.update(temp)
+    return reads_filtered
+
+
 def read_search_spec(reads, quick, BF):
     "Searches sequence-data in Bloomfilter and gets kmer-hits"
-    del reads[0]
+    #print(reads[0])
+    #del reads[0]
     BF.lookup_txt(reads, quick)
+    print("Number of used kmers: ", BF.number_of_kmeres)
     score = BF.get_score()
     score_sum = 0
     for i in score:
@@ -197,7 +285,7 @@ def single_oxa(reads, ext, pipe=None):
     BF.read_clonetypes(paths, oxas)
 
     # starting Bloomfilter process, depends on filetype
-    BF.lookup_oxa(reads, ext)
+    coordinates_forward, coordinates_reversed = BF.lookup_oxa(reads, ext)
 
     score = BF.get_oxa_score()
     BF.cleanup()
@@ -207,7 +295,7 @@ def single_oxa(reads, ext, pipe=None):
         pipe.send([score, oxas])
         pipe.close()
     else:
-        return score, oxas
+        return score, oxas, coordinates_forward, coordinates_reversed
 
 
 def oxa_and_IC_multiprocessing(IC_lookup, reads, ext, quick):
@@ -223,12 +311,16 @@ def oxa_and_IC_multiprocessing(IC_lookup, reads, ext, quick):
         reads_ct = reads[:2000]
     else:
         reads_ct = reads
+    start = time.time()
     p1 = Process(target=read_search, args=(IC_lookup, reads_ct, quick, child_ic))
     p1.start()
     p2 = Process(target=single_oxa, args=(reads, ext, child_oxa))
     p2.start()
     p1.join()
     p2.join()
+    end = time.time()
+    needed = round(end - start, 2)
+    print("Time needed multiprocessing: ", needed)
 
     # getting results back from pipes
     results_ic = parent_ic.recv()  # has scores and names

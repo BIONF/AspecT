@@ -114,7 +114,7 @@ def classify(csv_file, result, lst):
             prediction = ["sp.", 0]
     else:
         if max(result) < 0.3:
-            prediction = ["none", 0]
+            prediction = ["None", 0]
 
     return prediction[0]
 

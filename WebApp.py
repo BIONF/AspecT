@@ -3,7 +3,7 @@ from Option_field_WebApp import Login
 import os
 import csv
 import json
-from search_filter import single_oxa, get_added_genomes, oxa_and_IC_multiprocessing, read_search, read_search_spec, pre_processing
+from search_filter import single_oxa, get_added_genomes, oxa_and_IC_multiprocessing, read_search, read_search_spec, pre_processing, pre_processing_prefilter, pre_processing_prefilter2, read_search_pre
 from flask_bcrypt import Bcrypt
 from flask_login import login_user, login_required, LoginManager
 from flask_login import UserMixin
@@ -18,6 +18,9 @@ import Add_Species
 from Bio import Entrez, Medline
 import re
 import webbrowser
+import warnings
+
+warnings.filterwarnings("ignore")
 
 # Source Logging and Error Handling
 # https://flask.palletsprojects.com/en/1.1.x/logging/
@@ -45,7 +48,9 @@ with open(r'config/login.txt', 'rb') as fp:
 
 #pre process the BF
 global BF_Master
+global BF_Master_prefilter
 BF_Master = pre_processing()
+BF_Master_prefilter = pre_processing_prefilter2()
 
 
 
@@ -251,7 +256,6 @@ def assign():
             session['hits_ct'] = [0,0,0,0,0,0,0,0]
 
         else:
-            print("Test")
             session['vals_oxa'] = "None"
             session['names_oxa'] = "None"
             session['vals_ct'] = [0,0,0,0,0,0,0,0]
@@ -313,6 +317,7 @@ def assignspec():
     # getting user parameters back with session function
     filename = session.get('filename', None)
     quick = session.get('quick')
+    metagenome = session.get('metagenome')
     added = session.get('added', None)
     oxa = session.get('OXA', None)
     start = time.time()
@@ -338,26 +343,46 @@ def assignspec():
             else:
                 quick = 0
         else:
-            quick = 2
+            if metagenome:
+                quick = 4
+            else:
+                quick = 2
         # deleting file
         os.remove(filename)
+
+
     # starts the lookup for a given sequence
+    if metagenome:
+        start_meta = time.time()
+        reads = read_search_pre(reads, BF_Master_prefilter)
+        end_meta = time.time()
+        needed_meta = round(end_meta - start_meta, 2)
+        print("Runtime: ",needed_meta)
     score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master)
+    #print("Scores: ", score_ct)
+    #print("Hits: ", hits_ct)
+    #print("Names: ", names_ct)
     # storing values in session for creating plot
     session['vals_ct_spec'] = score_ct
     session['names_ct_spec'] = names_ct
     session['hits_ct_spec'] = hits_ct
 
     if oxa:
-        score_oxa, names_oxa = single_oxa(reads, ext)
+        score_oxa, names_oxa, coordinates_forward, coordinates_reversed = single_oxa(reads, ext)
         session['vals_oxa_spec'] = score_oxa
         session['names_oxa_spec'] = names_oxa
+        session["coordinates_forward"] = coordinates_forward
+        session["coordinates_reversed"] = coordinates_reversed
     else:
         session['vals_oxa_spec'] = "None"
         session['names_oxa_spec'] = "None"
 
     # making prediction
-    prediction = classify(r'Training_data/Training_data_spec.csv', score_ct, True)
+    if not metagenome:
+        prediction = classify(r'Training_data/Training_data_spec.csv', score_ct, True)
+    else:
+        index_result = max(range(len(score_ct)), key=score_ct.__getitem__)
+        prediction = names_ct[index_result]
     prediction_claast = prediction
     if prediction == 'sp.':
         prediction = 'NONE of the known Acinetobacter species'
@@ -368,6 +393,7 @@ def assignspec():
 
     end = time.time()
     needed = round(end - start, 2)
+    print("Runtime: ",needed)
     session['time'] = str(needed)
 
     if prediction_claast == "baumannii":
@@ -420,10 +446,11 @@ def species():
     if request.method == 'POST':
         data = request.json
         if data is not None:
-            filename = data[-3]
-            session['quick'] = data[-2]
-            session['OXA'] = data[-1]
-            del data[-3:]
+            filename = data[-4]
+            session['quick'] = data[-3]
+            session['OXA'] = data[-2]
+            session['metagenome'] = data[-1]
+            del data[-4:]
 
             name = r'files/' + str(secrets.token_hex(8)) + filename + '.txt'
 
@@ -881,6 +908,7 @@ def resultsspec():
 
     literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
 
+
     if request.method == 'POST':
         data = request.json
         Entrez.email = 'dominik.sens@t-online.de'
@@ -935,6 +963,7 @@ def resultsspec():
             literature_abstract[i] = re.sub(CLEANR, '', literature_abstract[i])
 
         literature_all = [literature,literature_content,literature_abstract,literature_authors,literature_journal, literature_id]
+
         return json.dumps(literature_all)
 
     return render_template('species.html',

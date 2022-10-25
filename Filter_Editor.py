@@ -3,6 +3,7 @@ import pickle
 import csv
 import os
 import json
+from Bio.Seq import Seq
 
 
 def add_filter(name, svm, lines):
@@ -95,6 +96,12 @@ def add_oxa(name, lines):
     for i in range(len(lines) - 1, -1, -1):
         if lines[i] == '':
             del lines[i]
+    lines_reverse = []
+    for r in range(len(lines)):
+        # building reverse complement
+        lines_reverse.append(Seq(lines[r]))
+        lines_reverse[r] = str(lines_reverse[r].reverse_complement())
+    lines = lines_reverse
     BF.train_lines(lines, 0)
     BF.save_clonetypes(r'filter/OXAs/' + name + '.txt')
 

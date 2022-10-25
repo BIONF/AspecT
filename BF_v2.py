@@ -6,6 +6,7 @@ from OXA_Table import OXATable
 from Bio.Seq import Seq
 import os
 import csv
+import time
 
 
 
@@ -193,7 +194,6 @@ class AbaumanniiBloomfilter:
         # control if element is in filter
         hits = [True] * self.clonetypes
         self.hit = False
-        x = 0
 
         for i in range(self.clonetypes):
             row = i*self.array_size
@@ -216,7 +216,6 @@ class AbaumanniiBloomfilter:
                 else:
                     # Update hit counter
                     self.hits_per_filter[i] += 1
-                    x += 1
 
 
     def train(self, kmer, clonetype):
@@ -240,11 +239,25 @@ class AbaumanniiBloomfilter:
                     # trains k-mere into filter
                     self.train(str(sequence.seq[i: i + self.k]), clonetype)
         else:
+            counter = 0
+            file_length = 0
             for sequence in SeqIO.parse(filepath, "fasta"):
+                file_length += 1
+            for sequence in SeqIO.parse(filepath, "fasta"):
+                if counter == 0:
+                    start = time.time()
                 # for each k-mere
                 for i in range(len(sequence.seq) - self.k + 1):
                     # trains k-mere into filter
                     self.train(str(sequence.seq[i: i + self.k]), clonetype)
+                    # testing
+                    self.train(str(sequence.seq[i: i + self.k].reverse_complement()), clonetype)
+                if counter == 0:
+                    end = time.time()
+                    needed = round(end - start, 2)
+                    #print("Estimated training-time: ", (needed*file_length))
+                counter += 1
+
 
 
     def train_lines(self, lines, ct):
@@ -288,11 +301,13 @@ class AbaumanniiBloomfilter:
             for single_read in reads:
                 # r is rest, so all kmers have size k
                 for j in range(0, len(single_read) - self.k, 500):
+                    if "N" in single_read[j:j + self.k]:
+                        continue
                     self.number_of_kmeres += 1
                     self.lookup(single_read[j: j + self.k])
         # AspecT Sequence-Reads every 10th kmer
         elif quick == 2:
-            for single_read in range(0, len(reads), 10):
+            for single_read in range(0, len(reads)):
                 hit_counter = 0
                 for j in range(0, len(reads[single_read]) - self.k, 10):
                     if j == 5 and hit_counter == 0:
@@ -309,9 +324,20 @@ class AbaumanniiBloomfilter:
             for single_read in reads:
                 # r is rest, so all kmers have size k
                 for j in range(0, len(single_read) - self.k, 10):
+                    if "N" in single_read[j:j + self.k]:
+                        continue
                     self.number_of_kmeres += 1
                     self.lookup(single_read[j: j + self.k])
-        # Uses every kmer
+        # metagenome mode
+        elif quick == 4:
+            for kmer in reads:
+                # lookup for kmer
+                hits_per_filter_copy = self.hits_per_filter[:]
+                self.lookup(kmer)
+                if ((sum(self.hits_per_filter) - sum(hits_per_filter_copy)) <= 5) and ((sum(self.hits_per_filter) - sum(hits_per_filter_copy)) != 0):
+                    self.number_of_kmeres += 1
+                elif (sum(self.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
+                    self.hits_per_filter = hits_per_filter_copy[:]
         else:
             for single_read in reads:
                 for j in range(len(single_read) - self.k + 1):
@@ -478,7 +504,7 @@ class AbaumanniiBloomfilter:
             # Altes testen mit Genom, hits per filter ausgeben lassen
             #self.oxa_search_genomes(reads)
             #self.oxa_search_genomes_v2(reads)
-            self.oxa_search_genomes_v3(reads)
+            coordinates_forward = self.oxa_search_genomes_v3(reads)
             for r in range(len(reads)):
                 # building reverse complement
                 reads[r] = Seq(reads[r])
@@ -486,11 +512,12 @@ class AbaumanniiBloomfilter:
             # lookup reverse complement
             #self.oxa_search_genomes(reads)
             #self.oxa_search_genomes_v2(reads)
-            self.oxa_search_genomes_v3(reads)
+            coordinates_reversed = self.oxa_search_genomes_v3(reads)
 
         # cleanup
         reads = None
         self.table.cleanup()
+        return coordinates_forward, coordinates_reversed
 
 
     def oxa_search_genomes(self, genome):
@@ -542,6 +569,7 @@ class AbaumanniiBloomfilter:
 
 
     def oxa_search_genomes_v3(self, genome):
+        coordinates = []
         for i in genome:
             j = 0
             success = False
@@ -551,27 +579,49 @@ class AbaumanniiBloomfilter:
                 self.lookup(kmer, True)
                 if success == False:
                     if sum(self.hits_per_filter) > hits:
+                        counter = 0
+                        coordinates.append([j])
                         # 1024 (longest oxa-gene) - 19
-                        for n in range(j - 19, j + 1005, 1):
+                        for n in range(j - 249, j + 1005, 1):
                             if 0 <= j < len(i):
+                                hits_per_filter_copy = self.hits_per_filter[:]
                                 kmer = i[n:n + self.k]
                                 self.lookup(kmer, True)
+                                if hits_per_filter_copy != self.hits_per_filter:
+                                    counter += 1
+                        if counter > 300:
+                            coordinates[-1].append(j+1005)
+                        else:
+                            coordinates.pop()
                         j += 1005
                         success = True
                     else:
-                        j += 20
+                        #j += 20
+                        j += 250
                         success = False
                 else:
                     if sum(self.hits_per_filter) > hits:
+                        coordinates.append([j])
+                        counter = 0
                         for n in range(j, j + 1005, 1):
                             if 0 <= j < len(i):
                                 kmer = i[n:n + self.k]
+                                hits_per_filter_copy = self.hits_per_filter[:]
                                 self.lookup(kmer, True)
+                                if hits_per_filter_copy != self.hits_per_filter:
+                                    counter += 1
+                        if counter > 300:
+                            coordinates[-1].append(j+1005)
+                        else:
+                            coordinates.pop()
                         j += 1005
                         success = True
                     else:
-                        j += 20
+                        j += 250
                         success = False
+        if len(coordinates) > 0:
+            print("Coordinates: ", coordinates)
+        return coordinates
 
 
     def get_oxa_score(self):
