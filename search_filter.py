@@ -160,7 +160,7 @@ def pre_processing_prefilter():
 
 def pre_processing_prefilter2():
     "Preprocesses Acinetobacter Prefilter, collapse with other prefilter after testing"
-    with open(r'filter/FilterHuman.txt', 'rb') as fp:
+    with open(r'filter/FilterAcinetobacter.txt', 'rb') as fp:
         clonetypes = pickle.load(fp)
     # initialising filter with database parameters
     BF = BF_v2.AbaumanniiBloomfilter(3080000000)
