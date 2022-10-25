@@ -302,7 +302,7 @@ def assign():
     end = time.time()
     needed = round(end - start, 2)
     session['time'] = str(needed)
-    print("Time needed: ", needed)
+    #print("Time needed: ", needed)
 
     app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
     return redirect('/results')
@@ -357,7 +357,7 @@ def assignspec():
         reads = read_search_pre(reads, BF_Master_prefilter)
         end_meta = time.time()
         needed_meta = round(end_meta - start_meta, 2)
-        print("Runtime: ",needed_meta)
+        #print("Runtime: ",needed_meta)
     score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master)
     #print("Scores: ", score_ct)
     #print("Hits: ", hits_ct)
