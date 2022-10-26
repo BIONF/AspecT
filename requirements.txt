@@ -8,6 +8,7 @@ bcrypt
 biopython
 bitarray
 mmh3
+pymmh3
 numpy
 pandas
 requests
