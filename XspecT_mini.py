@@ -383,10 +383,10 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                         #    print(reads_filtered[i][j])
                     #elif (sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
                     #    BF.hits_per_filter = hits_per_filter_copy[:]
-            print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
-            print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
-            print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
-            print("Kmers used for species assignment: ", BF.number_of_kmeres)
+            #print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
+            #print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
+            #print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
+            #print("Kmers used for species assignment: ", BF.number_of_kmeres)
         #    for sequence in SeqIO.parse(paths[i], "fastq"):
         #        if counter < read_amount:
         #            counter += 1
