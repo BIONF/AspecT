@@ -1,4 +1,9 @@
-import mmh3
+try:
+    # try with a fast c-implementation ...
+    import mmh3 as mmh3
+except ImportError:
+    # ... otherwise fallback to this code!
+    import pymmh3 as mmh3
 from bitarray import bitarray
 from Bio import SeqIO
 from copy import deepcopy
