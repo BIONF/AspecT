@@ -291,14 +291,106 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
         BF.hits_per_filter = [0] * BF.clonetypes
         BF_1_1.number_of_kmeres = 0
         BF_1_1.hits_per_filter = [0]
-        if file_format == "fasta" or file_format == "fna":
-            for sequence in SeqIO.parse(paths[i], "fasta"):
-                for j in range(0, len(sequence.seq) - BF.k, 500):
+        if file_format == "fasta" or file_format == "fna" or file_format =="fa":
+            if metagenome:
+                counter = 0
+                reads = []
+                for sequence in SeqIO.parse(paths[i], "fasta"):
+		            # reverse_sequence = sequence.seq.reverse_complement()
+                    read_kmers = []
+                   # if counter < read_amount:
+                     #   counter += 1
+                   # else:
+                     #   break
+                    k1 = str(sequence.seq[0:BF_1_1.k])  # first k-mer
+                    k2 = str(sequence.seq[len(str(sequence.seq)) - BF_1_1.k:])  # last k-mer
+                    mid = len(str(sequence.seq)) // 2
+                    k3 = str(sequence.seq[mid:mid + BF_1_1.k])  # k-mer in middle
+                    k4 = str(sequence.seq[BF_1_1.k:BF_1_1.k * 2])
+                    k5 = str(sequence.seq[mid + BF_1_1.k:mid + BF_1_1.k * 2])
+                    # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
+                    # then the read won't be tested further
+                    hit_sum = sum(BF_1_1.hits_per_filter)
                     hits_per_filter_copy = BF_1_1.hits_per_filter[:]
-                    BF_1_1.lookup(str(sequence.seq[j: j + BF.k]))
-                    if hits_per_filter_copy != BF_1_1.hits_per_filter:
+                    BF_1_1.lookup(k1)
+                    BF_1_1.lookup(k2)
+                    BF_1_1.lookup(k3)
+                    BF_1_1.lookup(k4)
+                    BF_1_1.lookup(k5)
+		            # needs at least 2 of 3 hits to continue with read
+                    if (sum(BF_1_1.hits_per_filter) - hit_sum) > 2:
+                        for j in range(len(str(sequence.seq)) - BF_1_1.k):
+                            if "N" not in str(sequence.seq[j: j + BF_1_1.k]):
+                                read_kmers.append(str(sequence.seq[j: j + BF_1_1.k]))
+		                # read_kmers.append(str(reverse_sequence[j: j + BF_1_1.k]))
+                        reads.append(read_kmers)
+                        BF_1_1.hits_per_filter = hits_per_filter_copy
+                    else:
+		                # resetting hit counter
+                        BF_1_1.hits_per_filter = hits_per_filter_copy
+                    for i in reads:
+                        counter += len(i)
+                    # how many kmers to use
+                    if counter >= 50000:
+                        break
+                reads_filtered = set()
+                threshold_dic = {}
+                for i in range(len(reads)):
+                    print("Read-Länge: ", len(reads[i]))
+                    read_kmers_filtered = []
+                    threshold = 0
+                    temp = []
+                    for j in range(len(reads[i])):
+                        BF_1_1.number_of_kmeres += 1
+                        hits_per_filter_copy = BF_1_1.hits_per_filter[:]
+                        BF_1_1.lookup(reads[i][j])
+                        if hits_per_filter_copy != BF_1_1.hits_per_filter:
+                            threshold += 1
+                            temp.append(reads[i][j])
+                    count = threshold_dic.get(threshold, 0)
+                    threshold_dic[threshold] = count + 1
+                    # parameter value needs to be determined
+                    print("Länge temp: ", len(temp))
+                    print("Threshold: ", 0.7*len(reads[i])) 
+                    if threshold >= (0.7*len(reads[i])):
+                        print("added")
+                        reads_filtered.update(temp)
+                #reads_for_blast = set()
+                #for sequence in range(len(reads)):
+                    #reads[sequence] = "".join(reads[sequence])
+                x, y = [], []
+                threshold_dic = dict(sorted(threshold_dic.items()))
+                for i in reads_filtered:
+                    hits_per_filter_copy = BF.hits_per_filter[:]
+                    BF.lookup(i)
+                    if ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) <= 5 and ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) != 0)):
                         BF.number_of_kmeres += 1
-                        BF.lookup(str(sequence.seq[j: j + BF.k]))
+                        #for sequence in reads:
+                            #if i in sequence:
+                                #reads_for_blast.update(sequence)
+                    else:
+                        BF.hits_per_filter = hits_per_filter_copy[:]
+                #print("Sequences: ", reads_for_blast) 
+                print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
+                print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
+                print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
+                print("Kmers used for species assignment: ", BF.number_of_kmeres)
+            else:
+                for sequence in SeqIO.parse(paths[i], "fasta"):
+                    for j in range(0, len(sequence.seq) - BF.k, 500):
+                        hits_per_filter_copy = BF_1_1.hits_per_filter[:]
+                        BF_1_1.lookup(str(sequence.seq[j: j + BF.k]))
+                        if hits_per_filter_copy != BF_1_1.hits_per_filter:
+                            BF.number_of_kmeres += 1
+                            BF.lookup(str(sequence.seq[j: j + BF.k]))
+            score = BF.get_score()
+            print("Scores: ", score)
+            print("Hits: ", BF.hits_per_filter)
+            names = []
+            with open(r'filter/FilterSpecies.txt', 'rb') as fp:
+                names = pickle.load(fp)
+            score_edit = [str(x) for x in score]
+            score_edit = ",".join(score_edit)
         elif file_format == "fastq" or file_format == "fq":
             if metagenome:
                 counter = 0
@@ -424,7 +516,6 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		#            else:
 		#                break
             else:
-                print("Test")
                 counter = 0
                 for sequence in SeqIO.parse(paths[i], "fastq"):
                     if counter < read_amount:
