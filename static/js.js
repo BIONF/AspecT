@@ -195,17 +195,18 @@ async function asyncCallspec(ext) {
   // saving checkbox info so the Form can be hidden
   checks.push(document.getElementById("quick").checked);
   checks.push(document.getElementById("OXA").checked);
+  checks.push(document.getElementById("metagenome").checked);
   //checks.push(document.getElementById("added").checked);
   // Deactivating Checkboxes etc while extracting reads
   document.getElementById("opt").style.display = "none";
 
   // Complete fileupload (Max 100.000 lines) if fasta file
   if ((ext == 'fasta') || (ext == 'fna')){
-    max_reads = 100000;
+    max_reads = 5000000;
   }
-  if (((ext == 'fq') || (ext == 'fastq')) && (document.getElementById("OXA").checked)){
-    max_reads = 250000;
-  }
+  //if (((ext == 'fq') || (ext == 'fastq')) && (document.getElementById("OXA").checked)){
+  //  max_reads = 250000;
+  //}
 
   // Assigning
   const result = await extract(max_reads, checks, ext);
@@ -239,7 +240,7 @@ $(document).ready(function () {
         // only numbers are in string (to prevent entering '.' or '+'
         var not_int = !(/^\d+$/.test(number.toString()));
 
-        if ((not_int) || (number < 500) || (number > 100000)){
+        if ((not_int) || (number < 500) || (number > 1000000)){
             alert('Error: Number of reads must be between 500 and 100.000 and also be a Integer!');
             return;
         }
@@ -449,14 +450,19 @@ $(document).ready(function () {
         // only numbers are in string (to prevent entering '.' or '+'
         var not_int = !(/^\d+$/.test(number.toString()));
 
-        if ((not_int) || (number < 5000) || (number > 100000)){
-            alert('Error: Number of reads must be between 5000 and 100.000 and also be a Integer!');
+        if ((not_int) || (number < 5000) || (number > 10000000)){
+            alert('Error: Number of reads must be between 5000 and 10.000.000 and also be a Integer!');
             return;
         }
 
         // Getting Reads
+      //  var data = await asyncCallspec(ext)
+      //  var js_data="[";
+      //    for(var indx=0;indx<data.length-1;indx++){
+      //      js_data+=JSON.stringify(data[indx],null,4)+",";
+      //    }
+      //    js_data+=JSON.stringify(data[data.length-1],null,4)+"]";
         var js_data = JSON.stringify(await asyncCallspec(ext));
-        console.log(typeof js_data)
 
         if (js_data == null){
             alert('Error: This Tool does not support your Browser, please use a modern Browser.');
