@@ -78,6 +78,7 @@ The amount of reads that will be used has to be set by the user when using seque
 A detailed walkthrough with examples is provided in Xspect’s wiki.
 
 ## Contributors
+- Dominik Sens
 - Sam Gimbel
 - Bardja Djahanschiri
 - Vinh Tran
