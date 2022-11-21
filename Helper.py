@@ -11,6 +11,7 @@ import csv
 import Classifier
 from OXA_Table import OXATable
 import math
+import json
 #from Bio.Seq import Seq
 
 # Help-Script to generate new default Data, manually train new Bloomfilter, generate svm-data and test the tools
@@ -61,9 +62,28 @@ def write_file5():
     with open(r'filter/FilterAcinetobacter.txt', 'wb') as fp:
         pickle.dump(itemlist, fp)
 
+def write_file_dyn():
+    # creates a list of names from Bloom Filters
+    # Use a path to your sequences you want to train; the file names need to be the name of the specie e.g Acinetobacter_baumannii.fasta
+    files = os.listdir(r'F:/project/genomes/BioMonitoring/Bloomfilter/species')
+    for i in range(len(files) -1, -1, -1):
+        if 'txt' not in files[i]:
+            del files[i]
+        else:
+            files[i] = files[i][:-4]
+    for i in range(len(files)):
+        if "_" in files[i]:
+            files[i] = files[i].replace("_", " ")
+    print(files)
+    itemlist = files
+    # set a file name that fits to your bloomfilters
+    with open(r'filter/FilterCulicidaeSpecies.txt', 'wb') as fp:
+        pickle.dump(itemlist, fp)
 
-def train():
-    files = os.listdir(r'F:/project/Oxas/neu/')
+
+def train_genes():
+    #files = os.listdir(r'F:/project/Oxas/neu/')
+    files = os.listdir(r'F:/project/Oxas/oxa_archive/OXAS/OXA-families/')
     for i in range(len(files) -1, -1, -1):
         if 'fasta' not in files[i]:
             del files[i]
@@ -72,17 +92,19 @@ def train():
         BF.set_arraysize(80000)
         BF.set_clonetypes(1)
         BF.set_hashes(7)
-        BF.set_k(20)
-        path = r'F:/project/Oxas/neu/' + files[i]
+        BF.set_k(21)
+       # path = r'F:/project/Oxas/neu/' + files[i]
+        path = r'F:/project/Oxas/oxa_archive/OXAS/OXA-families/' + files[i]
         #file must be fasta not fna
         name = files[i][:-6] + '.txt'
-        print(name)
-        result = r'F:/project/results/' + name
+        print("Adding: ", name)
+        result = r'F:/project/Oxas/oxa_archive/OXAS/results/' + name
         BF.train_sequence(path, 0)
         BF.save_clonetypes(result)
+        name = name[:-4]
         # Adding kmeres
         kmere = {}
-        for sequence in SeqIO.parse(paths[i], "fasta"):
+        for sequence in SeqIO.parse(path, "fasta"):
             for j in range(0, len(sequence.seq) - BF.k):
                 kmer = str(sequence.seq[j: j + BF.k])
                 count = kmere.get(kmer, 0)
@@ -93,12 +115,34 @@ def train():
         file = None
         # Adding counter
         c = 0
-        for sequence in SeqIO.parse(paths[i], "fasta"):
+        for sequence in SeqIO.parse(path, "fasta"):
             c = len(sequence.seq) - BF.k + 1
         counter = json.load(open(r'filter/OXAs_dict/counter.txt'))
         counter[name] = c
         json.dump(counter, open(r'filter/OXAs_dict/counter.txt', 'w'))
         BF.cleanup()
+
+
+def remove_oxa():
+    #files = os.listdir(r'F:/project/Oxas/neu/')
+    files = os.listdir(r'filter/OXAs/')
+    files.remove("OXA-727.txt")
+    for i in range(len(files)):
+        print("Deleting: ",files[i])
+        # Deleting Filter
+        os.remove(r'filter/OXAs/' + files[i])
+
+        # Deleting k-mer counter
+        counter = json.load(open(r'filter/OXAs_dict/counter.txt'))
+        del counter[files[i]]
+        json.dump(counter, open(r'filter/OXAs_dict/counter.txt', 'w'))
+        counter = None
+
+        # Deleting kmeres
+        file = json.load(open(r'filter/OXAs_dict/oxa_dict.txt'))
+        del file[files[i]]
+        json.dump(file, open(r'filter/OXAs_dict/oxa_dict.txt', 'w'))
+        file = None
 
 
 def split(a, n):
@@ -116,18 +160,6 @@ def divide_and_test():
     fasta_list.append(files)
     fasta_list.append(list(split(fasta_list[0], 2)))
     fasta_list.append(list(split(fasta_list[0], 4)))
-    #fasta_list.append(list(split(fasta_list[0], 8)))
-    #fasta_list.append(list(split(fasta_list[0], 16)))
-    #for level in range(int(filter_depth)):
-        #temp = []
-        #for i in range(len(fasta_list[-1])):
-            #temp.append(list(split(fasta_list[-1][i], 2)))
-            #list_half = []
-            #mid = len(len(fasta_list[-1][i])) // 2
-            #list_half.append(paths[:mid])
-            #list_half.append(paths[mid:])
-            #fasta_list.append(list_half)
-        #fasta_list.append(temp)
     for i in fasta_list:
         print(i)
     for i in range(len(files) -1, -1, -1):
@@ -137,11 +169,8 @@ def divide_and_test():
     for i in range(len(files)):
         if i == 0:
             continue
-        #with open(paths[i]) as file:
         for sequence in SeqIO.parse(paths[i], "fasta"):
             sequences += str(sequence.seq)
-    #with open(r'F:/project/Oxas/Oxas/OXA-279/OXA-Test.fasta', "a") as output_handle:
-        #output_handle.write(sequences)
 
 
 def test_oxa():
@@ -152,8 +181,8 @@ def test_oxa():
 
 def train_Core():
     """trains (concatenated-)genomes into BF and saves them"""
-    #files = os.listdir(r"filter\species_totrain")
-    files = os.listdir(r'F:\project\genomes\totrain2')
+    # Enter a path that contains your concatenated sequences
+    files = os.listdir(r'F:\project\genomes\BioMonitoring\Bloomfilter\species')
     for i in range(len(files) -1, -1, -1):
         if 'fna' in files[i] or 'fasta' in files[i]:
             continue
@@ -161,21 +190,21 @@ def train_Core():
             del files[i]
     for i in range(len(files)):
         #set BF-parameters
-        #species size: 115000000
-        #species size + reverse: 230000000
-        #species size + reverse 21: 165000000
-        #human: 23000000000; reversed: 46000000000
-        #Aci: 3080000000
-        BF = BF_v2.AbaumanniiBloomfilter(3080000000)
-        BF.set_arraysize(3080000000)
+        # Acinetobacter species size: 115000000
+        # Acinetobacter species size + reverse: 230000000
+        # Acinetobacter species size + reverse 21mers: 165000000
+        #human prefilter: 23000000000; reversed: 46000000000
+        #Aci prefilter: 3080000000
+        #mosquito prefilter: 9000000
+        BF = BF_v2.AbaumanniiBloomfilter(350000)
+        BF.set_arraysize(350000)
         BF.set_clonetypes(1)
         BF.set_hashes(7)
         BF.set_k(21)
-        #path = r"filter/species_totrain/" + files[i]
-        path = r'F:/project/genomes/totrain2/' + files[i]
+        path = r'F:/project/genomes/BioMonitoring/Bloomfilter/species/' + files[i]
         name = files[i].split('.')[-2] + '.txt'
-        print(name)
-        #result = r"filter/species" + name
+        print("Trained: ", name)
+        #  Enter path where your generated BF will be stored
         result = r'F:/project/results/' + name
         BF.train_sequence(path, 0)
         BF.save_clonetypes(result)
@@ -602,8 +631,10 @@ def main():
     #write_file5()
     #pw()
     #train_Core()
+    write_file_dyn()
     #train()
-    divide_and_test()
+    #remove_oxa()
+    #divide_and_test()
     #count_distinct()
     #write_file3()
     #write_file4()
