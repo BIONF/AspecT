@@ -244,24 +244,14 @@ class AbaumanniiBloomfilter:
                     # trains k-mere into filter
                     self.train(str(sequence.seq[i: i + self.k]), clonetype)
         else:
-            counter = 0
-            file_length = 0
             for sequence in SeqIO.parse(filepath, "fasta"):
-                file_length += 1
-            for sequence in SeqIO.parse(filepath, "fasta"):
-                if counter == 0:
-                    start = time.time()
                 # for each k-mere
+                # for i in range(len(sequence.seq) - self.k + 1):
                 for i in range(len(sequence.seq) - self.k + 1):
                     # trains k-mere into filter
                     self.train(str(sequence.seq[i: i + self.k]), clonetype)
                     # testing
                     self.train(str(sequence.seq[i: i + self.k].reverse_complement()), clonetype)
-                if counter == 0:
-                    end = time.time()
-                    needed = round(end - start, 2)
-                    #print("Estimated training-time: ", (needed*file_length))
-                counter += 1
 
 
 
@@ -295,7 +285,7 @@ class AbaumanniiBloomfilter:
                 self.number_of_kmeres += 1
 
 
-    def lookup_txt(self, reads, quick=False):
+    def lookup_txt(self, reads, ext, quick=False):
         """ Reading extracted fq-reads"""
         self.number_of_kmeres = 0
         self.hits_per_filter = [0] * self.clonetypes
@@ -335,7 +325,10 @@ class AbaumanniiBloomfilter:
                     self.lookup(single_read[j: j + self.k])
         # metagenome mode
         elif quick == 4:
+            counter = 0
+            #print("Kmer Anzahl: ", len(reads))
             for kmer in reads:
+                counter += 1
                 # lookup for kmer
                 hits_per_filter_copy = self.hits_per_filter[:]
                 self.lookup(kmer)
@@ -343,6 +336,9 @@ class AbaumanniiBloomfilter:
                     self.number_of_kmeres += 1
                 elif (sum(self.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
                     self.hits_per_filter = hits_per_filter_copy[:]
+                if ext == "fasta" or ext == "fna" or ext == "fa":
+                    if counter >= 50000:
+                        break
         else:
             for single_read in reads:
                 for j in range(len(single_read) - self.k + 1):
@@ -510,14 +506,15 @@ class AbaumanniiBloomfilter:
             #self.oxa_search_genomes(reads)
             #self.oxa_search_genomes_v2(reads)
             coordinates_forward = self.oxa_search_genomes_v3(reads)
+            reads_reversed = []
             for r in range(len(reads)):
                 # building reverse complement
-                reads[r] = Seq(reads[r])
-                reads[r] = reads[r].reverse_complement()
+                reads_reversed.append(Seq(reads[r]))
+                reads_reversed[r] = reads_reversed[r].reverse_complement()
             # lookup reverse complement
             #self.oxa_search_genomes(reads)
             #self.oxa_search_genomes_v2(reads)
-            coordinates_reversed = self.oxa_search_genomes_v3(reads)
+            coordinates_reversed = self.oxa_search_genomes_v3(reads_reversed)
 
         # cleanup
         reads = None
@@ -624,8 +621,8 @@ class AbaumanniiBloomfilter:
                     else:
                         j += 250
                         success = False
-        if len(coordinates) > 0:
-            print("Coordinates: ", coordinates)
+        #if len(coordinates) > 0:
+            #print("Coordinates: ", coordinates)
         return coordinates
 
 

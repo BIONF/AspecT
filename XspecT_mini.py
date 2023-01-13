@@ -8,7 +8,7 @@ from copy import deepcopy
 import time
 import csv
 import pickle
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
@@ -38,6 +38,9 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         BF_2 = search_filter.pre_processing_ClAssT()
     if oxa:
         BF_3 = search_filter.pre_processing_oxa()
+    #if BioMonitoring:
+        #BF = search_filter.pre_processing_Culicidae_species()
+        #BF_1_1 = search_filter.pre_processing_prefilter_Culicidae()
     end = time.time()
     needed = round(end - start, 2)
     print("Time needed for preprocessing: ", needed)
@@ -46,7 +49,7 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
     except FileNotFoundError:
         print("Error: Invalid filepath!")
         quit()
-    if file_format == "fna" or file_format == "fasta":
+    if file_format == "fna" or file_format == "fasta" or file_format == "fa":
         for i in range(len(files) - 1, -1, -1):
             if 'fna' in files[i] or 'fasta' in files[i]:
                 continue
@@ -107,7 +110,10 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         predictions_ClAssT, scores_ClAssT = clAssT(
             BF_2, files, paths, file_format, read_amount)
     if oxa:
-        scores_oxa = blaOXA(BF_3, files, paths, file_format, read_amount)
+        scores_oxa, scores_oxa_ind = blaOXA(BF_3, files, paths, file_format, read_amount)
+    #if BioMonitoring:
+        #predictions, scores = xspecT(
+            #BF, BF_1_1, files, paths, file_format, read_amount, metagenome, BioMonitoring)
     print("Preparing results...")
     print("")
     end = time.time()
@@ -147,11 +153,11 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         excelv2 = []
         for i in range(len(files)):
             excel.append(files[i] + spaces[i] + predictions[i] + "       " + scores[i] + "           " +
-                         predictions_ClAssT[i] + "            " + scores_ClAssT[i] + "           " + str(scores_oxa[i]))
+                         predictions_ClAssT[i] + "            " + scores_ClAssT[i] + "           " + str(scores_oxa[i]) + "           " + str(scores_oxa_ind[i][0]) +  "           " + str(scores_oxa_ind[i][1]))
             excelv2.append(files[i] + "," + predictions[i] + "," + scores[i] +
                            predictions_ClAssT[i] + "," + scores_ClAssT[i] + "," + str(scores_oxa[i]))
-        print(header_filename + "           Species                  Score          Sub-Type        Score          blaOXA-Genes")
-        print(underscore + "__________________________________________________________________________________________________")
+        print(header_filename + "           Species                  Score          Sub-Type        Score          blaOXA-Family                    blaOXA-Gene       Score")
+        print(underscore +      "___________________________________________________________________________________________________________________________________________")
         for i in excel:
             print(i)
         for i in range(0, len(excelv2)):
@@ -202,10 +208,10 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
     elif oxa and not ClAssT and not XspecT:
         excelv2 = []
         for i in range(len(files)):
-            excel.append(files[i] + spaces[i] + str(scores_oxa[i]))
+            excel.append(files[i] + spaces[i] + str(scores_oxa[i]) + "           " + str(scores_oxa_ind[i][0]) +  "           " + str(scores_oxa_ind[i][1]))
             excelv2.append(files[i] + "," + str(scores_oxa[i]))
-        print(header_filename + "           blaOXA-Genes")
-        print(underscore + "___________________________")
+        print(header_filename + "           blaOXA-Family                    blaOXA-Gene       Score")
+        print(underscore + "_______________________________________________________________________")
         for i in excel:
             print(i)
         print("")
@@ -240,12 +246,12 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         excelv2 = []
         for i in range(len(files)):
             excel.append(files[i] + spaces[i] + predictions[i] +
-                         "       " + scores[i] + "           " + str(scores_oxa[i]))
+                         "       " + scores[i] + "           " + str(scores_oxa[i]) + "           " + str(scores_oxa_ind[i][0]) +  "           " + str(scores_oxa_ind[i][1]))
             excelv2.append(files[i] + "," + predictions[i] +
                            "," + scores[i] + str(scores_oxa[i]))
         print(header_filename +
-              "           Species                  Score          blaOXA-Genes")
-        print(underscore + "___________________________________________________________________")
+              "           Species                  Score          blaOXA-Family                    blaOXA-Gene       Score")
+        print(underscore + "_______________________________________________________________________________________________________________")
         for i in excel:
             print(i)
         for i in range(0, len(excelv2)):
@@ -260,12 +266,12 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         excelv2 = []
         for i in range(len(files)):
             excel.append(files[i] + spaces[i] + predictions_ClAssT[i] +
-                         "            " + scores_ClAssT[i] + "           " + str(scores_oxa[i]))
+                         "            " + scores_ClAssT[i] + "           " + str(scores_oxa[i]) + "           " + str(scores_oxa_ind[i][0]) +  "           " + str(scores_oxa_ind[i][1]))
             excelv2.append(files[i] + "," + predictions_ClAssT[i] +
                            "," + scores_ClAssT[i] + "," + str(scores_oxa[i]))
         print(header_filename +
-              "           Sub-Type        Score          blaOXA-Genes")
-        print(underscore + "__________________________________________________________")
+              "           Sub-Type        Score          blaOXA-Family                    blaOXA-Gene       Score")
+        print(underscore + "______________________________________________________________________________________________________")
         for i in excel:
             print(i)
         for i in range(0, len(excelv2)):
@@ -293,7 +299,6 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
         BF_1_1.hits_per_filter = [0]
         if file_format == "fasta" or file_format == "fna" or file_format =="fa":
             if metagenome:
-                counter = 0
                 reads = []
                 for sequence in SeqIO.parse(paths[i], "fasta"):
 		            # reverse_sequence = sequence.seq.reverse_complement()
@@ -302,41 +307,51 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                      #   counter += 1
                    # else:
                      #   break
-                    k1 = str(sequence.seq[0:BF_1_1.k])  # first k-mer
-                    k2 = str(sequence.seq[len(str(sequence.seq)) - BF_1_1.k:])  # last k-mer
-                    mid = len(str(sequence.seq)) // 2
-                    k3 = str(sequence.seq[mid:mid + BF_1_1.k])  # k-mer in middle
-                    k4 = str(sequence.seq[BF_1_1.k:BF_1_1.k * 2])
-                    k5 = str(sequence.seq[mid + BF_1_1.k:mid + BF_1_1.k * 2])
+                    #k1 = str(sequence.seq[0:BF_1_1.k])  # first k-mer
+                    #k2 = str(sequence.seq[len(str(sequence.seq)) - BF_1_1.k:])  # last k-mer
+                    #mid = len(str(sequence.seq)) // 2
+                    #k3 = str(sequence.seq[mid:mid + BF_1_1.k])  # k-mer in middle
+                    #k4 = str(sequence.seq[BF_1_1.k:BF_1_1.k * 2])
+                    #k5 = str(sequence.seq[mid + BF_1_1.k:mid + BF_1_1.k * 2])
                     # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
                     # then the read won't be tested further
                     hit_sum = sum(BF_1_1.hits_per_filter)
                     hits_per_filter_copy = BF_1_1.hits_per_filter[:]
-                    BF_1_1.lookup(k1)
-                    BF_1_1.lookup(k2)
-                    BF_1_1.lookup(k3)
-                    BF_1_1.lookup(k4)
-                    BF_1_1.lookup(k5)
-		            # needs at least 2 of 3 hits to continue with read
-                    if (sum(BF_1_1.hits_per_filter) - hit_sum) > 2:
+                    sample_size = int(len(str(sequence.seq)) ** 0.5)
+                    threshold_contig = sample_size * 0.7
+                    for i in range(0, len(str(sequence.seq)) - BF_1_1.k, sample_size):
+                        if "N" not in str(sequence.seq[i: i + BF_1_1.k]):
+                            BF_1_1.lookup(str(sequence.seq[i: i + BF_1_1.k]).upper())
+                    #BF_1_1.lookup(k1)
+                    #BF_1_1.lookup(k2)
+                    #BF_1_1.lookup(k3)
+                    #BF_1_1.lookup(k4)
+                    #BF_1_1.lookup(k5)
+		            # needs at least 70% hits to continue with the contig
+                    counter = 0
+                    #print((sum(BF_1_1.hits_per_filter) - hit_sum), threshold_contig)
+                    if (sum(BF_1_1.hits_per_filter) - hit_sum) > threshold_contig:
+                        #print("added")
                         for j in range(len(str(sequence.seq)) - BF_1_1.k):
                             if "N" not in str(sequence.seq[j: j + BF_1_1.k]):
-                                read_kmers.append(str(sequence.seq[j: j + BF_1_1.k]))
+                                read_kmers.append(str(sequence.seq[j: j + BF_1_1.k]).upper())
+                                counter += 1
+                                # how many kmers? to use
+                                if counter >= 50000:
+                                    break
 		                # read_kmers.append(str(reverse_sequence[j: j + BF_1_1.k]))
                         reads.append(read_kmers)
                         BF_1_1.hits_per_filter = hits_per_filter_copy
                     else:
 		                # resetting hit counter
                         BF_1_1.hits_per_filter = hits_per_filter_copy
-                    for i in reads:
-                        counter += len(i)
-                    # how many kmers to use
-                    if counter >= 50000:
-                        break
                 reads_filtered = set()
                 threshold_dic = {}
+                counter = 0
+                #print(reads)
+                #print("Anzahl contigs: ", len(reads))
                 for i in range(len(reads)):
-                    print("Read-Länge: ", len(reads[i]))
+                    #print("Read-Länge: ", len(reads[i]))
                     read_kmers_filtered = []
                     threshold = 0
                     temp = []
@@ -350,11 +365,15 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                     count = threshold_dic.get(threshold, 0)
                     threshold_dic[threshold] = count + 1
                     # parameter value needs to be determined
-                    print("Länge temp: ", len(temp))
-                    print("Threshold: ", 0.7*len(reads[i])) 
+                    #print("Länge temp: ", len(temp))
+                    #print("Threshold: ", 0.7*len(reads[i]))
                     if threshold >= (0.7*len(reads[i])):
-                        print("added")
+                        #print("added")
                         reads_filtered.update(temp)
+                        counter += len(temp)
+                    #print(counter)
+                    if counter >= 50000:
+                        break
                 #reads_for_blast = set()
                 #for sequence in range(len(reads)):
                     #reads[sequence] = "".join(reads[sequence])
@@ -370,7 +389,7 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                                 #reads_for_blast.update(sequence)
                     else:
                         BF.hits_per_filter = hits_per_filter_copy[:]
-                #print("Sequences: ", reads_for_blast) 
+                #print("Sequences: ", reads_for_blast)
                 print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
                 print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
                 print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
@@ -378,17 +397,22 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
             else:
                 for sequence in SeqIO.parse(paths[i], "fasta"):
                     for j in range(0, len(sequence.seq) - BF.k, 500):
-                        hits_per_filter_copy = BF_1_1.hits_per_filter[:]
-                        BF_1_1.lookup(str(sequence.seq[j: j + BF.k]))
-                        if hits_per_filter_copy != BF_1_1.hits_per_filter:
-                            BF.number_of_kmeres += 1
-                            BF.lookup(str(sequence.seq[j: j + BF.k]))
+                        #hits_per_filter_copy = BF_1_1.hits_per_filter[:]
+                        #BF_1_1.lookup(str(sequence.seq[j: j + BF.k]))
+                        #if hits_per_filter_copy != BF_1_1.hits_per_filter:
+                        BF.number_of_kmeres += 1
+                        BF.lookup(str(sequence.seq[j: j + BF.k]))
             score = BF.get_score()
-            print("Scores: ", score)
-            print("Hits: ", BF.hits_per_filter)
+            #print("Scores: ", score)
+            #print("Hits: ", BF.hits_per_filter)
             names = []
-            with open(r'filter/FilterSpecies.txt', 'rb') as fp:
-                names = pickle.load(fp)
+            BioMonitoring = False
+            if BioMonitoring:
+                with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
+                    names = pickle.load(fp)
+            else:
+                with open(r'filter/FilterSpecies.txt', 'rb') as fp:
+                    names = pickle.load(fp)
             score_edit = [str(x) for x in score]
             score_edit = ",".join(score_edit)
         elif file_format == "fastq" or file_format == "fq":
@@ -412,6 +436,11 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                     # then the read won't be tested further
                     hit_sum = sum(BF_1_1.hits_per_filter)
                     hits_per_filter_copy = BF_1_1.hits_per_filter[:]
+                    #sample_size = int(len(str(sequence.seq)) ** 0.5)
+                    #threshold_read = sample_size * 0.7
+                    #for i in range(0, len(str(sequence.seq)) - BF_1_1.k, sample_size):
+                    #    if "N" not in str(sequence.seq[i: i + BF_1_1.k]):
+                    #        BF_1_1.lookup(str(sequence.seq[i: i + BF_1_1.k]))
                     if "N" not in str(sequence.seq):
                         BF_1_1.lookup(k1)
                         BF_1_1.lookup(k2)
@@ -432,6 +461,7 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                 reads_filtered = set()
 		    #    reads_filtered = []
                 threshold_dic = {}
+                #print("Anzahl reads: ", len(reads))
                 for i in range(len(reads)):
                     read_kmers_filtered = []
                     threshold = 0
@@ -452,11 +482,13 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                             temp.append(reads[i][j])
                     count = threshold_dic.get(threshold, 0)
                     threshold_dic[threshold] = count + 1
-                    if threshold >= 80:
+                    #print("Threshold: ", 0.8 * len(reads[i]), " Value: ", threshold)
+                    if threshold >= 0.8 * len(reads[i]):
                         reads_filtered.update(temp)
 		                    # reads_filtered.add(reads[i][j])
 		                    # reads_filtered.append(reads[i][j])
 		            # reads_filtered.append(list(read_kmers_filtered_unique))
+                    #print("Kmer Anzahl: ", len(reads_filtered))
                 x, y = [], []
                 threshold_dic = dict(sorted(threshold_dic.items()))
 		        # for key, value in threshold_dic.items():
@@ -469,6 +501,7 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		        # plt.show()
 		        # plt.clf()
 		        # print(dict(sorted(threshold_dic.items())))
+                #print("Kmer Anzahl: ", len(reads_filtered))
                 for i in reads_filtered:
                     hits_per_filter_copy = BF.hits_per_filter[:]
                     BF.lookup(i)
@@ -493,10 +526,10 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		                    #    print(reads_filtered[i][j])
 		                # elif (sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
 		                #    BF.hits_per_filter = hits_per_filter_copy[:]
-		        # print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
-		        # print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
-		        # print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
-		        # print("Kmers used for species assignment: ", BF.number_of_kmeres)
+                print("Kmers searched in Acinetobacter-Filter: ", BF_1_1.number_of_kmeres)
+                print("Kmers found in Acinetobacter-Filter: ", BF_1_1.hits_per_filter[0])
+                print("Kmers discarded: ", (BF_1_1.number_of_kmeres - BF_1_1.hits_per_filter[0]))
+                print("Kmers used for species assignment: ", BF.number_of_kmeres)
 		    #    for sequence in SeqIO.parse(paths[i], "fastq"):
 		    #        if counter < read_amount:
 		    #            counter += 1
@@ -539,12 +572,16 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		    # print("Scores: ", score)
 		    # print("Hits: ", BF.hits_per_filter)
             names = []
-            with open(r'filter/FilterSpecies.txt', 'rb') as fp:
-                names = pickle.load(fp)
+            if BioMonitoring:
+                with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
+                    names = pickle.load(fp)
+            else:
+                with open(r'filter/FilterSpecies.txt', 'rb') as fp:
+                    names = pickle.load(fp)
             score_edit = [str(x) for x in score]
             score_edit = ",".join(score_edit)
         # making prediction
-        if not metagenome:
+        if not metagenome and not BioMonitoring:
             prediction = Classifier.classify(r'Training_data/Training_data_spec.csv', score, True)
         else:
             index_result = max(range(len(score)), key=score.__getitem__)
@@ -553,9 +590,15 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
             predictions.append("unknown")
             scores.append(str(max(score)))
         else:
-            predictions.append("A. " + prediction)
-            scores.append(str(max(score)))
-
+            if BioMonitoring:
+                predictions.append(prediction)
+                scores.append(str(max(score)))
+            else:
+                predictions.append("A. " + prediction)
+                scores.append(str(max(score)))
+    if BioMonitoring:
+        for i in range(len(predictions)):
+            print(files[i] + ": " + "Predicted species: ", predictions[i], " Score: ", scores[i])
     print("Taxonomic assignment done...")
     return predictions, scores
 
@@ -599,12 +642,13 @@ def clAssT(BF_2, files, paths, file_format, read_amount):
 def blaOXA(BF_3, files, paths, file_format, read_amount):
     start = time.time()
     print("Start screening for blaOXA-genes...")
-    paths_oxa = sorted(os.listdir(r"filter/OXAs/"))
+    paths_oxa = sorted(os.listdir(r"filter/OXAs/families"))
+    BF_families = BF_3["OXA-families"]
     oxas = []
     scores_oxa = []
+    scores_oxa_ind = []
     for i in paths_oxa:
         oxas.append(i[:-4])
-
     for i in range(len(files)):
         oxa_dic = {}
         if i == int(len(files)/6) or i == int(len(files)/3) or i == int(len(files)/2) or i == int(len(files)/1.5) or i == int(len(files)/1.2):
@@ -612,14 +656,14 @@ def blaOXA(BF_3, files, paths, file_format, read_amount):
         # Checking file type
         # if the file is fasta -> concat lines
         reads = []
-        BF_3.number_of_kmeres = 0
-        BF_3.hits_per_filter = [0] * BF_3.clonetypes
-        BF_3.table = OXATable()
-        BF_3.table.read_dic(r'filter/OXAs_dict/oxa_dict.txt')
+        BF_families.number_of_kmeres = 0
+        BF_families.hits_per_filter = [0] * BF_families.clonetypes
+        BF_families.table = OXATable()
+        BF_families.table.read_dic(r'filter/OXAs_dict/oxa_dict.txt')
         if file_format == "fasta" or file_format == "fna":
             for sequence in SeqIO.parse(paths[i], "fasta"):
                 reads.append(str(sequence.seq))
-            BF_3.lookup_oxa(reads, ".fna")
+            BF_families.lookup_oxa(reads, ".fna")
         elif file_format == "fastq" or file_format == "fq":
             counter = 0
             for sequence in SeqIO.parse(paths[i], "fastq"):
@@ -628,9 +672,9 @@ def blaOXA(BF_3, files, paths, file_format, read_amount):
                     reads.append(str(sequence.seq))
                 else:
                     break
-            BF_3.lookup_oxa(reads, ".fq")
+            BF_families.lookup_oxa(reads, ".fq")
             # print("Reads used: ", counter)
-        score_oxa = BF_3.get_oxa_score()
+        score_oxa = BF_families.get_oxa_score()
         for i in range(len(oxas)):
             oxa_dic[oxas[i]] = score_oxa[i]
         for i in range(len(oxa_dic)):
@@ -638,12 +682,43 @@ def blaOXA(BF_3, files, paths, file_format, read_amount):
                 del oxa_dic[oxas[i]]
         if len(oxa_dic) == 0:
             oxa_dic = "None"
+        if oxa_dic != "None":
+            oxa_dic = dict(sorted(oxa_dic.items(), key=lambda item: item[1]))
         scores_oxa.append(oxa_dic)
+        # prepare data for next taxonomic level
+        oxa_names = []
+        for oxa_family in oxa_dic:
+            oxa_names.append(oxa_family[:-7])
+        for oxa_family in oxa_names:
+            oxa_dic_ind = {}
+            ## TODO:
+            BF_ind = BF_3[oxa_family]
+            BF_ind.number_of_kmeres = 0
+            BF_ind.hits_per_filter = [0] * BF_ind.clonetypes
+            BF_ind.table = OXATable()
+            BF_ind.table.read_dic(r'filter/OXAs_dict/oxa_dict.txt')
+            paths_oxa = sorted(os.listdir(r"filter/OXAs/individual/" + oxa_family))
+            oxas_ind = []
+            for i in paths_oxa:
+                oxas_ind.append(i[:-4])
+            if file_format == "fasta" or file_format == "fna":
+                BF_ind.lookup_oxa(reads, ".fna")
+            elif file_format == "fastq" or file_format == "fq":
+                BF_ind.lookup_oxa(reads, ".fq")
+            score_oxa = BF_ind.get_oxa_score()
+            # build dict with oxa-gen and its score
+            for i in range(len(oxas_ind)):
+                oxa_dic_ind[oxas_ind[i]] = score_oxa[i]
+            # filter dict by score
+            if len(oxa_dic_ind) == 0:
+                scores_oxa_ind.append("None")
+            else:
+                scores_oxa_ind.append([max(oxa_dic_ind, key=oxa_dic_ind.get), oxa_dic_ind[max(oxa_dic_ind, key=oxa_dic_ind.get)]])
     end = time.time()
     needed = round(end - start, 2)
     print("Time needed: ", needed)
     print("Screening for blaOXA-genes done...")
-    return scores_oxa
+    return scores_oxa, scores_oxa_ind
 
 
 def main():
@@ -680,6 +755,15 @@ def main():
     else:
         print("Error: Wrong Input, use y/n (y=yes, n=no)!")
         quit()
+    #print("Run BioMonitoring for mosquitos: (y/n)?")
+    #BioMonitoring = input()
+    #if BioMonitoring == "y":
+        #BioMonitoring = True
+    #elif BioMonitoring == "n":
+        #BioMonitoring = False
+    #else:
+        #print("Error: Wrong Input, use y/n (y=yes, n=no)!")
+        #quit()
     print("Metagenome-Mode?: (y/n)?")
     metagenome = input()
     if metagenome == "y":

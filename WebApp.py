@@ -302,7 +302,7 @@ def assign():
     end = time.time()
     needed = round(end - start, 2)
     session['time'] = str(needed)
-    #print("Time needed: ", needed)
+    print("Time needed: ", needed)
 
     app.logger.info('Assignment done for ' + str(filename) + ', Time needed: ' + str(needed))
     return redirect('/results')
@@ -342,6 +342,9 @@ def assignspec():
                 quick = 1
             else:
                 quick = 0
+            if metagenome:
+                quick = 4
+            reads.pop(0)
         else:
             if metagenome:
                 quick = 4
@@ -350,15 +353,20 @@ def assignspec():
         # deleting file
         os.remove(filename)
 
-
+        for i in range(len(reads)):
+            reads[i] = reads[i].upper()
     # starts the lookup for a given sequence
     if metagenome:
         start_meta = time.time()
-        reads = read_search_pre(reads, BF_Master_prefilter)
+        reads = read_search_pre(reads, BF_Master_prefilter, ext)
         end_meta = time.time()
         needed_meta = round(end_meta - start_meta, 2)
-        #print("Runtime: ",needed_meta)
-    score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master)
+        print("Runtime filtering: ", needed_meta)
+    score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master, ext)
+    print("Kmers searched in Acinetobacter-Filter: ", BF_Master_prefilter.number_of_kmeres)
+    print("Kmers found in Acinetobacter-Filter: ", BF_Master_prefilter.hits_per_filter[0])
+    print("Kmers discarded: ", (BF_Master_prefilter.number_of_kmeres - BF_Master_prefilter.hits_per_filter[0]))
+    print("Kmers used for species assignment: ", BF_Master.number_of_kmeres)
     #print("Scores: ", score_ct)
     #print("Hits: ", hits_ct)
     #print("Names: ", names_ct)

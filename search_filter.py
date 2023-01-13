@@ -142,6 +142,7 @@ def pre_processing():
     return BF
 
 
+# needs to be deleted i guess
 def pre_processing_prefilter():
     "Preprocesses the Bloomfilter-Matrix when the program is launched"
     with open(r'filter/FilterHuman.txt', 'rb') as fp:
@@ -174,31 +175,89 @@ def pre_processing_prefilter2():
     return BF
 
 
-def read_search_pre(reads, BF_pre):
+def pre_processing_prefilter_Culicidae():
+    "Preprocesses the mosquito prefilter"
+    with open(r'filter/FilterCulicidae.txt', 'rb') as fp:
+        clonetypes = pickle.load(fp)
+    # initialising filter with database parameters
+    # must be the same values used when trained!!
+    BF = BF_v2.AbaumanniiBloomfilter(9000000)
+    BF.set_arraysize(9000000)
+    BF.set_hashes(7)
+    BF.set_k(21)
+    paths = sorted(os.listdir(r"filter/Culicidae_Prefilter/"))
+    for i in range(len(paths)):
+        paths[i] = r"filter/Culicidae_Prefilter/" + paths[i]
+    BF.read_clonetypes(paths, clonetypes)
+    return BF
+
+
+def pre_processing_Culicidae_species():
+    "Preprocesses the mosquito species filter"
+    with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
+        clonetypes = pickle.load(fp)
+    # initialising filter with database parameters
+    # must be the same values used when trained!!
+    BF = BF_v2.AbaumanniiBloomfilter(350000)
+    BF.set_arraysize(350000)
+    BF.set_hashes(7)
+    BF.set_k(21)
+    paths = sorted(os.listdir(r"filter/Culicidae_species/"))
+    for i in range(len(paths)):
+        paths[i] = r"filter/Culicidae_species/" + paths[i]
+    BF.read_clonetypes(paths, clonetypes)
+    return BF
+
+
+def read_search_pre(reads, BF_pre, ext):
     reads_new = []
+    counter = 0
+    BF_pre.number_of_kmeres = 0
+    BF_pre.hits_per_filter = [0]
     for single_read in reads:
         read_kmers = []
-        k1 = single_read[0:BF_pre.k]  # first k-mer
-        k2 = single_read[len(single_read) - BF_pre.k:]  # last k-mer
-        mid = len(single_read) // 2
-        k3 = single_read[mid:mid + BF_pre.k]  # k-mer in middle
-        k4 = single_read[BF_pre.k:BF_pre.k * 2]
-        k5 = single_read[mid + BF_pre.k:mid + BF_pre.k * 2]
-        # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
-        # then the read won't be tested further
         hit_sum = sum(BF_pre.hits_per_filter)
         hits_per_filter_copy = BF_pre.hits_per_filter[:]
-        if "N" not in single_read:
-            BF_pre.lookup(k1)
-            BF_pre.lookup(k2)
-            BF_pre.lookup(k3)
-            BF_pre.lookup(k4)
-            BF_pre.lookup(k5)
+        # use a scaling sample size for contigs/scaffolds
+        if ext == "fasta" or ext == "fna" or ext == "fa":
+            sample_size = int(len(single_read) ** 0.5)
+            threshold_read = sample_size * 0.7
+            #print("Sample-Size: ", sample_size)
+            #print("Read-Length: ", len(single_read))
+            for i in range(0, len(single_read) - BF_pre.k, sample_size):
+                if "N" not in single_read[i: i + BF_pre.k]:
+                    BF_pre.lookup(single_read[i: i + BF_pre.k])
+        # for reads use a static sample of 5
+        # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
+        # then the read won't be tested further
+        else:
+            k1 = single_read[0:BF_pre.k]  # first k-mer
+            k2 = single_read[len(single_read) - BF_pre.k:]  # last k-mer
+            mid = len(single_read) // 2
+            k3 = single_read[mid:mid + BF_pre.k]  # k-mer in middle
+            k4 = single_read[BF_pre.k:BF_pre.k * 2]
+            k5 = single_read[mid + BF_pre.k:mid + BF_pre.k * 2]
+            if "N" not in single_read:
+                BF_pre.lookup(k1)
+                BF_pre.lookup(k2)
+                BF_pre.lookup(k3)
+                BF_pre.lookup(k4)
+                BF_pre.lookup(k5)
+            threshold_read = 3
         # needs at least 2 of 3 hits to continue with read
-        if (sum(BF_pre.hits_per_filter) - hit_sum) > 3:
+        #print("Hits: ", sum(BF_pre.hits_per_filter) - hit_sum)
+        #print("Threshold: ", threshold_read)
+        #print((sum(BF_pre.hits_per_filter) - hit_sum), threshold_read)
+        counter = 0
+        if (sum(BF_pre.hits_per_filter) - hit_sum) > threshold_read:
+            #print("added")
             for j in range(len(single_read) - BF_pre.k):
                 if "N" not in single_read[j: j + BF_pre.k]:
                     read_kmers.append(single_read[j: j + BF_pre.k])
+                    if ext == "fasta" or ext == "fna" or ext == "fa":
+                        counter += 1
+                        if counter >= 50000:
+                            break
             reads_new.append(read_kmers)
             BF_pre.hits_per_filter = hits_per_filter_copy
         else:
@@ -206,7 +265,15 @@ def read_search_pre(reads, BF_pre):
             BF_pre.hits_per_filter = hits_per_filter_copy
     reads_filtered = set()
     threshold_dic = {}
+    #print("Anzahl contigs: ", len(reads_new))
+    if ext == "fasta" or ext == "fna" or ext == "fa":
+        cutoff = 0.7
+    else:
+        cutoff = 0.8
+    counter = 0
+    #print(reads_new)
     for i in range(len(reads_new)):
+        #print("Contig-Length: ", len(reads_new[i]))
         read_kmers_filtered = []
         threshold = 0
         temp = []
@@ -219,17 +286,23 @@ def read_search_pre(reads, BF_pre):
                 temp.append(reads_new[i][j])
         count = threshold_dic.get(threshold, 0)
         threshold_dic[threshold] = count + 1
-        if threshold >= 80:
+        #print("Threshold: ", cutoff * len(reads_new[i]), " Value: ", threshold)
+        if threshold >= cutoff * len(reads_new[i]):
             reads_filtered.update(temp)
+            counter += len(temp)
+        if ext == "fasta" or ext == "fna" or ext == "fa":
+            if counter >= 50000:
+                break
+        #print("Anzahl kmers: ", len(reads_filtered))
     return reads_filtered
 
 
-def read_search_spec(reads, quick, BF):
+def read_search_spec(reads, quick, BF, ext):
     "Searches sequence-data in Bloomfilter and gets kmer-hits"
     #print(reads[0])
     #del reads[0]
-    BF.lookup_txt(reads, quick)
-    print("Number of used kmers: ", BF.number_of_kmeres)
+    BF.lookup_txt(reads, ext, quick)
+    #print("Number of used kmers: ", BF.number_of_kmeres)
     score = BF.get_score()
     score_sum = 0
     for i in score:
@@ -241,36 +314,71 @@ def read_search_spec(reads, quick, BF):
 
 def pre_processing_oxa():
     # getting filters
-    paths = sorted(os.listdir(r"filter/OXAs/"))
-    oxas = []
-    for i in paths:
-        oxas.append(i[:-4])
+    oxa_families = sorted(os.listdir(r"filter/OXAs/families"))
+    oxa_family_names = []
+    paths = []
+    for filter in oxa_families:
+        oxa_family_names.append(filter[:-4])
+    # get paths for oxa-family BF
+    for i in range(len(oxa_families)):
+        paths.append(r"filter/OXAs/families/" + oxa_families[i])
 
-    for i in range(len(paths)):
-        paths[i] = r"filter/OXAs/" + paths[i]
-
+    # getting filters of individiual filters of oxa-families
+    oxas_ind = sorted(os.listdir(r"filter/OXAs/individual"))
+    # get paths for individiual BF
+    paths_ind = []
+    oxa_ind_names = []
+    for i in range(len(oxas_ind)):
+        paths_ind.append(r"filter/OXAs/individual/" + oxas_ind[i])
+    # TODO: Rename variables
+    paths_ind_ind = {}
+    for i in range(len(paths_ind)):
+        temp = sorted(os.listdir(paths_ind[i]))
+        temp_list = []
+        for j in range(len(temp)):
+            temp_list.append(paths_ind[i] + "/" + temp[j])
+        paths_ind_ind[oxas_ind[i]] = temp_list
+    # list of BF-objects
+    BF_dict = {}
     # initialising filter with database parameters
     BF = BF_v2.AbaumanniiBloomfilter(80000)
     BF.set_arraysize(80000)
     BF.set_clonetypes(len(paths))
     BF.set_hashes(7)
-    BF.set_k(20)
+    BF.set_k(21)
     # User Options
     # reading single OXA filters
-    BF.read_clonetypes(paths, oxas)
-    return BF
+    BF.read_clonetypes(paths, oxa_family_names)
+    BF_dict["OXA-families"] = BF
+    # Add one BF-object for each oxa-family which contains individual oxa-BF
+    for name, path_oxa_family in paths_ind_ind.items():
+        names = []
+        for filter in path_oxa_family:
+            temp = filter.split("/")
+            names.append(temp[-1][:-4])
+        # initialising filter with database parameters
+        BF = BF_v2.AbaumanniiBloomfilter(80000)
+        BF.set_arraysize(80000)
+        BF.set_clonetypes(len(path_oxa_family))
+        BF.set_hashes(7)
+        BF.set_k(21)
+        # User Options
+        # reading single OXA filters
+        BF.read_clonetypes(path_oxa_family, names)
+        BF_dict[name] = BF
+    return BF_dict
 
 
 def single_oxa(reads, ext, pipe=None):
     """Uses the Bloomfilter module to lookup the OXA-genes"""
     # getting filters
-    paths = sorted(os.listdir(r"filter/OXAs/"))
+    paths = sorted(os.listdir(r"filter/OXAs/families/"))
     oxas = []
     for i in paths:
         oxas.append(i[:-4])
 
     for i in range(len(paths)):
-        paths[i] = r"filter/OXAs/" + paths[i]
+        paths[i] = r"filter/OXAs/families/" + paths[i]
 
 
     # initialising filter with database parameters
@@ -278,7 +386,7 @@ def single_oxa(reads, ext, pipe=None):
     BF.set_arraysize(80000)
     BF.set_clonetypes(len(paths))
     BF.set_hashes(7)
-    BF.set_k(20)
+    BF.set_k(21)
     # User Options
 
     # reading single OXA filters
