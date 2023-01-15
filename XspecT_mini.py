@@ -572,6 +572,7 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		    # print("Scores: ", score)
 		    # print("Hits: ", BF.hits_per_filter)
             names = []
+            BioMonitoring = False
             if BioMonitoring:
                 with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
                     names = pickle.load(fp)
