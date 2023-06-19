@@ -1,0 +1,11 @@
+XspecT Prediction, XspecT Score, ClAssT Prediction, ClAssT Score, Oxa Prediction, Oxa Score
+baumannii, 0.94, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+nosocomialis, 0.29, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+pittii, 0.23, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+seifertii, 0.22, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.03
+lactucae, 0.17, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+calcoaceticus, 0.14, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+oleivorans, 0.12, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+baylyi, 0.02, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+beijerinckii, 0.02, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.0
+bereziniae, 0.02, International Clone 2, [0.69, 0.95, 0.76, 0.65, 0.7, 0.66, 0.7, 0.67], A. baumannii, 0.01
