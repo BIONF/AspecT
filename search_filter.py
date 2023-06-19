@@ -82,7 +82,7 @@ def read_search(IC_lookup, reads, quick, pipe=None):
                 del paths[i]
 
     BF.read_clonetypes(paths, clonetypes)
-    BF.lookup_txt(reads, quick)
+    BF.lookup_txt(reads, False, quick)
     score = BF.get_score()
     hits = BF.get_hits_per_filter()
     names = BF.get_names()
@@ -130,8 +130,8 @@ def pre_processing():
     # kmer31 = 122000000
     # kmer20+reversed 230000000
     # kmers21 173000000
-    BF = BF_v2.AbaumanniiBloomfilter(173000000)
-    BF.set_arraysize(173000000)
+    BF = BF_v2.AbaumanniiBloomfilter(115000000)
+    BF.set_arraysize(115000000)
     BF.set_hashes(7)
     BF.set_k(21)
     #paths = sorted(os.listdir(r"filter/species_reversed/"))
@@ -214,6 +214,9 @@ def read_search_pre(reads, BF_pre, ext):
     counter = 0
     BF_pre.number_of_kmeres = 0
     BF_pre.hits_per_filter = [0]
+    read_amount = 0
+    reads_oxa_prefilter = []
+    reads_oxa_filtered = []
     for single_read in reads:
         read_kmers = []
         hit_sum = sum(BF_pre.hits_per_filter)
@@ -222,8 +225,6 @@ def read_search_pre(reads, BF_pre, ext):
         if ext == "fasta" or ext == "fna" or ext == "fa":
             sample_size = int(len(single_read) ** 0.5)
             threshold_read = sample_size * 0.7
-            #print("Sample-Size: ", sample_size)
-            #print("Read-Length: ", len(single_read))
             for i in range(0, len(single_read) - BF_pre.k, sample_size):
                 if "N" not in single_read[i: i + BF_pre.k]:
                     BF_pre.lookup(single_read[i: i + BF_pre.k])
@@ -231,6 +232,7 @@ def read_search_pre(reads, BF_pre, ext):
         # Taking sum of list as reference, if sum has not increased after testing those 3 kmeres,
         # then the read won't be tested further
         else:
+            # TO-DO implement dynamic sample size
             k1 = single_read[0:BF_pre.k]  # first k-mer
             k2 = single_read[len(single_read) - BF_pre.k:]  # last k-mer
             mid = len(single_read) // 2
@@ -245,71 +247,62 @@ def read_search_pre(reads, BF_pre, ext):
                 BF_pre.lookup(k5)
             threshold_read = 3
         # needs at least 2 of 3 hits to continue with read
-        #print("Hits: ", sum(BF_pre.hits_per_filter) - hit_sum)
-        #print("Threshold: ", threshold_read)
-        #print((sum(BF_pre.hits_per_filter) - hit_sum), threshold_read)
         counter = 0
         if (sum(BF_pre.hits_per_filter) - hit_sum) > threshold_read:
-            #print("added")
+            read_amount += 1
             for j in range(len(single_read) - BF_pre.k):
                 if "N" not in single_read[j: j + BF_pre.k]:
                     read_kmers.append(single_read[j: j + BF_pre.k])
                     if ext == "fasta" or ext == "fna" or ext == "fa":
                         counter += 1
-                        if counter >= 50000:
+                        # extract up to 5000 kmeres per read/contig
+                        if counter >= 5000:
                             break
+            reads_oxa_prefilter.append(single_read)
             reads_new.append(read_kmers)
             BF_pre.hits_per_filter = hits_per_filter_copy
         else:
             # resetting hit counter
             BF_pre.hits_per_filter = hits_per_filter_copy
-    reads_filtered = set()
+    reads_filtered = []
     threshold_dic = {}
-    #print("Anzahl contigs: ", len(reads_new))
     if ext == "fasta" or ext == "fna" or ext == "fa":
         cutoff = 0.7
     else:
         cutoff = 0.8
     counter = 0
-    #print(reads_new)
     for i in range(len(reads_new)):
-        #print("Contig-Length: ", len(reads_new[i]))
-        read_kmers_filtered = []
         threshold = 0
-        temp = []
         for j in range(len(reads_new[i])):
             BF_pre.number_of_kmeres += 1
             hits_per_filter_copy = BF_pre.hits_per_filter[:]
             BF_pre.lookup(reads_new[i][j])
             if hits_per_filter_copy != BF_pre.hits_per_filter:
                 threshold += 1
-                temp.append(reads_new[i][j])
-        count = threshold_dic.get(threshold, 0)
-        threshold_dic[threshold] = count + 1
-        #print("Threshold: ", cutoff * len(reads_new[i]), " Value: ", threshold)
         if threshold >= cutoff * len(reads_new[i]):
-            reads_filtered.update(temp)
-            counter += len(temp)
-        if ext == "fasta" or ext == "fna" or ext == "fa":
-            if counter >= 50000:
-                break
-        #print("Anzahl kmers: ", len(reads_filtered))
-    return reads_filtered
+            reads_filtered.append(reads_new[i])
+            reads_oxa_filtered.append(reads_oxa_prefilter[i])
+            counter += len(reads_new[i])
+       # if ext == "fasta" or ext == "fna" or ext == "fa":
+         #   if counter >= 50000:
+           #     break
+    return reads_filtered, reads_oxa_filtered
 
 
-def read_search_spec(reads, quick, BF, ext):
+def read_search_spec(reads, quick, BF, ext):    
     "Searches sequence-data in Bloomfilter and gets kmer-hits"
-    #print(reads[0])
-    #del reads[0]
-    BF.lookup_txt(reads, ext, quick)
-    #print("Number of used kmers: ", BF.number_of_kmeres)
-    score = BF.get_score()
-    score_sum = 0
-    for i in score:
-        score_sum += i
-    hits = BF.get_hits_per_filter()
-    names = BF.get_names()
-    return score, names, hits
+    if quick < 4:
+        BF.lookup_txt(reads, ext, quick)
+        score = BF.get_score()
+        hits = BF.get_hits_per_filter()
+        names = BF.get_names()
+        return score, names, hits, None
+    # Metagenome mode
+    elif quick == 4:
+        reads_classified, predictions = BF.lookup_txt(reads, ext, quick)
+        hits = None
+        names = None
+        return reads_classified, names, hits, predictions
 
 
 def pre_processing_oxa():

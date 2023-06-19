@@ -320,12 +320,13 @@ def assignspec():
     metagenome = session.get('metagenome')
     added = session.get('added', None)
     oxa = session.get('OXA', None)
+    amplicon = session.get('Amplicon')
     start = time.time()
 
     if not(os.path.exists(filename)):
         # in case that user types in route of loading screen
         # or file does not exist anymore
-        return redirect('/results')
+        return redirect('/resultsspec')
 
     else:
         # Checking file type
@@ -358,45 +359,98 @@ def assignspec():
     # starts the lookup for a given sequence
     if metagenome:
         start_meta = time.time()
-        reads = read_search_pre(reads, BF_Master_prefilter, ext)
+        reads, reads_oxa = read_search_pre(reads, BF_Master_prefilter, ext)
         end_meta = time.time()
         needed_meta = round(end_meta - start_meta, 2)
         print("Runtime filtering: ", needed_meta)
-    score_ct, names_ct, hits_ct = read_search_spec(reads, quick, BF_Master, ext)
-    print("Kmers searched in Acinetobacter-Filter: ", BF_Master_prefilter.number_of_kmeres)
-    print("Kmers found in Acinetobacter-Filter: ", BF_Master_prefilter.hits_per_filter[0])
-    print("Kmers discarded: ", (BF_Master_prefilter.number_of_kmeres - BF_Master_prefilter.hits_per_filter[0]))
-    print("Kmers used for species assignment: ", BF_Master.number_of_kmeres)
-    #print("Scores: ", score_ct)
-    #print("Hits: ", hits_ct)
-    #print("Names: ", names_ct)
+
+    # Lookup in Bloomfilter
+    # reads should be a list of sequences
+    score_ct, names_ct, hits_ct, predictions = read_search_spec(reads, quick, BF_Master, ext)
+
+    # preparing reads for oxa search
+    if metagenome:
+        reads = reads_oxa
+        
     # storing values in session for creating plot
-    session['vals_ct_spec'] = score_ct
-    session['names_ct_spec'] = names_ct
-    session['hits_ct_spec'] = hits_ct
+    if metagenome:
+        reads_classified = score_ct
+        session['reads_classified'] = reads_classified
+        # assign reads to species
+        species_dict = {}
+        predictions_names = set()
+        for ele in predictions:
+            predictions_names.add(ele)
+        for species in predictions_names:
+            species_dict[species] = []
+        # dict with species as keys and reads as values for oxa search
+        for i in range(len(predictions)):
+            species_dict[predictions[i]].append(reads[i])
+
+    if not metagenome:
+        session['vals_ct_spec'] = score_ct
+        session['names_ct_spec'] = names_ct
+        session['hits_ct_spec'] = hits_ct
 
     if oxa:
-        score_oxa, names_oxa, coordinates_forward, coordinates_reversed = single_oxa(reads, ext)
-        session['vals_oxa_spec'] = score_oxa
-        session['names_oxa_spec'] = names_oxa
-        session["coordinates_forward"] = coordinates_forward
-        session["coordinates_reversed"] = coordinates_reversed
+        if not metagenome:
+            score_oxa, names_oxa, coordinates_forward, coordinates_reversed = single_oxa(reads, ext)
+            for k in range(len(score_oxa)):
+                    if score_oxa[k] > 1:
+                        score_oxa[k] = 1
+            session['vals_oxa_spec'] = score_oxa
+            session['names_oxa_spec'] = names_oxa
+            session["coordinates_forward"] = coordinates_forward
+            session["coordinates_reversed"] = coordinates_reversed
+        elif metagenome:
+            # lookup for individual species
+            score_oxa_list = []
+            names_oxa_list = []
+            coordinates_forward_list = []
+            coordinates_reversed_list = []
+            for species in species_dict:
+                score_oxa, names_oxa, coordinates_forward, coordinates_reversed = single_oxa(species_dict[species], ext)
+                for k in range(len(score_oxa)):
+                    if score_oxa[k] > 1:
+                        score_oxa[k] = 1
+                score_oxa_list.append((score_oxa, species))
+                names_oxa.append(names_oxa_list)
+                coordinates_forward_list.append(coordinates_forward)
+                coordinates_reversed_list.append(coordinates_reversed)
+            oxa_results = []
+            # Ansatz mit den Tupeln geht nicht mit max funktion weil zu viele argumente
+            for i in range(len(score_oxa_list)):
+                if max(score_oxa_list[i][0]) > 0:
+
+                    oxa_results.append((score_oxa_list[i][1], names_oxa[score_oxa_list[i][0].index(max(score_oxa_list[i][0]))], max(score_oxa_list[i][0])))
+            #print(oxa_results)
+            session['oxa_results'] = oxa_results
+            session['vals_oxa_spec'] = score_oxa_list
+            session['names_oxa_spec'] = names_oxa_list
+            session["coordinates_forward"] = coordinates_forward_list
+            session["coordinates_reversed"] = coordinates_reversed_list
+
+
+                
     else:
+        session["oxa_results"] = "None"
         session['vals_oxa_spec'] = "None"
         session['names_oxa_spec'] = "None"
 
     # making prediction
     if not metagenome:
         prediction = classify(r'Training_data/Training_data_spec.csv', score_ct, True)
+        prediction_claast = prediction
+        if prediction == 'sp.':
+            prediction = 'NONE of the known Acinetobacter species'
+        else:
+            prediction = "A. " + prediction
     else:
-        index_result = max(range(len(score_ct)), key=score_ct.__getitem__)
-        prediction = names_ct[index_result]
-    prediction_claast = prediction
-    if prediction == 'sp.':
-        prediction = 'NONE of the known Acinetobacter species'
+        prediction_claast = None
+        prediction = []
+        for species in reads_classified:
+            prediction.append(species)
 
-    else:
-        prediction = "A. " + prediction
     session['prediction'] = prediction
 
     end = time.time()
@@ -454,11 +508,12 @@ def species():
     if request.method == 'POST':
         data = request.json
         if data is not None:
-            filename = data[-4]
-            session['quick'] = data[-3]
-            session['OXA'] = data[-2]
-            session['metagenome'] = data[-1]
-            del data[-4:]
+            filename = data[-5]
+            session['quick'] = data[-4]
+            session['OXA'] = data[-3]
+            session['metagenome'] = data[-2]
+            session['Amplicon'] = data[-1]
+            del data[-5:]
 
             name = r'files/' + str(secrets.token_hex(8)) + filename + '.txt'
 
@@ -496,7 +551,12 @@ def species():
                             literature_abstract="",
                             literature_authors=[[""],[""],[""],[""],[""],[""],[""],[""],[""],[""]],
                             literature_journal="",
-                            literature_all="")
+                            literature_all="", 
+                            text = "",
+                            additional_info = "", 
+                            metagenome = False, 
+                            oxa_labels="",
+                            oxa_data="")
 
 
 # add and remove page page
@@ -653,7 +713,7 @@ def results():
 
     # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
     # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
-    Entrez.email = 'dominik.sens@t-online.de'
+    Entrez.email = 'xspectBIOINF@web.de'
     handle = Entrez.esearch(db='pubmed',
                             sort='relevance',
                             retmax='10',
@@ -711,7 +771,7 @@ def results():
 
     if request.method == 'POST':
         data = request.json
-        Entrez.email = 'dominik.sens@t-online.de'
+        Entrez.email = 'xspectBIOINF@web.de'
         handle = Entrez.esearch(db='pubmed',
                                 sort=str(data[1]),
                                 retmax=str(data[0]),
@@ -825,42 +885,123 @@ def results():
 
 @app.route('/resultsspec', methods=['GET', 'POST'])
 def resultsspec():
-    """ gets AspecT-Results, creates a Plot and displays them on page with further information"""
+    """ gets XspecT-Results, creates a Plot and displays them on page with further information"""
 
-    # Values of clonetypes, is None if not existing
-    values_ct = session.get('vals_ct_spec')
-    hits_ct = session.get('hits_ct_spec')
-    clonetypes = session.get('names_ct_spec')
-    values_claast = session.get('vals_claast')
-    hits_claast = session.get('hits_claast')
-    clonetypes_claast = session.get('names_claast')
-    prediction = session.get('prediction')
-    prediction_claast = session.get('prediction_claast')
-    # Values of OXAs
-    values_oxa = session.get('vals_oxa_spec')
-    oxa_names = session.get('names_oxa_spec')
+    # CALCULATING RESULTS -----------------------------------------------------
+
+    metagenome = session.get('metagenome')
+
+    if not metagenome:
+        # Values of clonetypes, is None if not existing
+        filename = session.get('filename')
+        values_ct = session.get('vals_ct_spec')
+        hits_ct = session.get('hits_ct_spec')
+        clonetypes = session.get('names_ct_spec')
+        values_claast = session.get('vals_claast')
+        hits_claast = session.get('hits_claast')
+        clonetypes_claast = session.get('names_claast')
+        prediction = session.get('prediction')
+        prediction_claast = session.get('prediction_claast')
+        # Values of OXAs
+        values_oxa = session.get('vals_oxa_spec')
+        oxa_names = session.get('names_oxa_spec')
+        additional_info = "Score"
+        maxi = 1
+        text = "Most similar Acinetobacter species"
+        metagenome = False
+        oxa_labels="None"
+        oxa_data="None"
+
+        dic = {}
+        clonetypes_sorted = []
+        #the values will be sorted by highest values for better readability
+        for i in range(len(values_ct)):
+            dic[clonetypes[i]] = values_ct[i]
+        values_sorted = sorted(values_ct, reverse = True)
+        for i in sorted(dic, key=dic.get, reverse=True):
+            clonetypes_sorted.append(i)
+
+        #only the 10 biggest values will be shown for visibility
+        if len(values_sorted) > 10:
+            values_sorted = values_sorted[:10]
+            clonetypes_sorted = clonetypes_sorted[:10]
+
+        # Save results in csv file
+        # TODO later
+       # with open(r"Results/WebApp/results_" + filename[22:-4] + ".csv", 'w', newline='') as file:
+        #    file.write("XspecT Prediction, XspecT Score, ClAssT Prediction, ClAssT Score, Oxa Prediction, Oxa Score\n")
+         #   for i in range(len(values_sorted)):
+          #      file.write(clonetypes_sorted[i] + ", " + str(values_sorted[i]) + ", " + str(prediction_claast) + ", " + str(values_claast) + ", " + str(prediction) + ", " + str(values_oxa[i]) + "\n")
+
+    elif metagenome:
+        reads_classified = session.get('reads_classified')
+        # sort reads_classified by highest value of the second element
+        sorted_reads_classified = dict(sorted(reads_classified.items(), key=lambda x: x[1][1], reverse=True))
+        # get key of reads_classified with highest value of the second element from the value
+        predictions = []
+        values = []
+        for key, value in sorted_reads_classified.items():
+            predictions.append(key)
+            values.append(value[1])
+        clonetypes_sorted = predictions[:12]
+        values_sorted = values[:12]
+        prediction = predictions[0]
+        maxi = values[0]
+        additional_info = []
+        metagenome = True
+        filename = session.get('filename')
+
+        # Save results in csv file
+        # TODO later
+        #with open(r"Results/WebApp/results_" + filename[22:-4] + ".csv", 'w', newline='') as file:
+         #   file.write("Prediction, Score Median, Number of Contigs, Contig-Length Median, Uniqueness, Bootstrap Median\n")
+          #  for key, value in sorted_reads_classified.items():
+           #     file.write(key + "," + str(value[0]) + "," + str(value[1]) + "," + str(value[2]) + "," + str(value[3]) + "," + str(value[4]) + "\n")
+
+
+        for key, value in sorted_reads_classified.items():
+            number_of_contigs = value[1]
+            value[0] = "Score Median: " + str(value[0])
+            value[1] = "Number of Contigs: " + str(number_of_contigs)
+            value[2] = "Contig-Length Median: " + str(value[2])
+            value[3] = "Uniqueness: " + str(value[3])
+            value[4] = "Bootstrap Median: " + str(value[4])
+            additional_info.append(value[0] + "\n" + value[1] + "\n" + value[2] + "\n" + value[3] + "\n" + value[4])
+        text = "Detected Acinetobacter species"
+
+        # Values of clonetypes, is None if not existing
+        values_ct = session.get('vals_ct_spec')
+        hits_ct = session.get('hits_ct_spec')
+        clonetypes = session.get('names_ct_spec')
+        values_claast = session.get('vals_claast')
+        hits_claast = session.get('hits_claast')
+        clonetypes_claast = session.get('names_claast')
+        prediction_claast = session.get('prediction_claast')
+        # Values of OXAs
+        values_oxa = session.get('vals_oxa_spec')
+        oxa_names = session.get('names_oxa_spec')
+        oxa_results = session.get('oxa_results')
+
+        if oxa_results != "None":
+            oxa_labels = []
+            oxa_data = []
+            for results in oxa_results:
+                oxa_labels.append("A. " + results[0] + ": " + results[1])
+                oxa_data.append(results[2])
+        else:
+            oxa_labels = "None"
+            oxa_data = "None"
+
 
     filename = session.get('filename')[22:]
     filename = os.path.splitext(filename)[0]
-    dict = {}
-    clonetypes_sorted = []
-    counter = 0
 
-    #the values will be sorted by highest values for better readability
-    for i in range(len(values_ct)):
-        dict[clonetypes[i]] = values_ct[i]
-    values_sorted = sorted(values_ct, reverse = True)
-    for i in sorted(dict, key=dict.get, reverse=True):
-        clonetypes_sorted.append(i)
 
-    #only the 10 biggest values will be shown for visibility
-    if len(values_sorted) > 10:
-        values_sorted = values_sorted[:10]
-        clonetypes_sorted = clonetypes_sorted[:10]
+    # PUBMED LITERATURE SEARCH --------------------------------------------------------------------------------------------
 
     # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
     # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
-    Entrez.email = 'dominik.sens@t-online.de'
+    Entrez.email = 'xspectBIOINF@web.de'
     handle = Entrez.esearch(db='pubmed',
                             sort='relevance',
                             retmax='10',
@@ -919,7 +1060,7 @@ def resultsspec():
 
     if request.method == 'POST':
         data = request.json
-        Entrez.email = 'dominik.sens@t-online.de'
+        Entrez.email = 'xspectBIOINF@web.de'
         handle = Entrez.esearch(db='pubmed',
                                 sort=str(data[1]),
                                 retmax=str(data[0]),
@@ -984,11 +1125,16 @@ def resultsspec():
                            hits_claast = hits_claast,
                            clonetypes_claast=clonetypes_claast,
                            filename=filename,
-                           maxi = 1,
+                           maxi = maxi,
                            time=session.get('time'),
                            prediction=prediction,
                            prediction_claast=prediction_claast,
-                           literature_all=literature_all)
+                           literature_all=literature_all, 
+                           additional_info=additional_info,
+                           text=text, 
+                           metagenome=metagenome,
+                           oxa_labels=oxa_labels,
+                           oxa_data=oxa_data)
 
 
 @app.route('/resultsspecbaumannii')
@@ -1025,7 +1171,7 @@ def resultsspecbaumannii():
 
     # Pubmed literature search Source: https://gist.github.com/bonzanini/5a4c39e4c02502a8451d
     # and https://biopython-tutorial.readthedocs.io/en/latest/notebooks/09%20-%20Accessing%20NCBIs%20Entrez%20databases.html
-    Entrez.email = 'dominik.sens@t-online.de'
+    Entrez.email = 'xspectBIOINF@web.de'
     handle = Entrez.esearch(db='pubmed',
                             sort='relevance',
                             retmax='10',
@@ -1083,7 +1229,7 @@ def resultsspecbaumannii():
 
     if request.method == 'POST':
         data = request.json
-        Entrez.email = 'dominik.sens@t-online.de'
+        Entrez.email = 'xspectBIOINF@web.de'
         handle = Entrez.esearch(db='pubmed',
                                 sort=str(data[1]),
                                 retmax=str(data[0]),

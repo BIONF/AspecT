@@ -83,7 +83,7 @@ def write_file_dyn():
 
 def train_genes():
     #files = os.listdir(r'F:/project/Oxas/neu/')
-    files = os.listdir(r'F:/project/Oxas/oxa_archive/OXAS/OXA-families/')
+    files = os.listdir(r'F:/project/Oxas/oxa_archive/OXAS/OXA-732/')
     for i in range(len(files) -1, -1, -1):
         if 'fasta' not in files[i]:
             del files[i]
@@ -94,18 +94,18 @@ def train_genes():
         BF.set_hashes(7)
         BF.set_k(21)
        # path = r'F:/project/Oxas/neu/' + files[i]
-        path = r'F:/project/Oxas/oxa_archive/OXAS/OXA-families/' + files[i]
+        path = r'F:/project/Oxas/oxa_archive/OXAS/OXA-732/' + files[i]
         #file must be fasta not fna
         name = files[i][:-6] + '.txt'
         print("Adding: ", name)
-        result = r'F:/project/Oxas/oxa_archive/OXAS/results/' + name
+        result = r'filter/OXAs/individual/OXA-732/' + name
         BF.train_sequence(path, 0)
         BF.save_clonetypes(result)
         name = name[:-4]
         # Adding kmeres
         kmere = {}
         for sequence in SeqIO.parse(path, "fasta"):
-            for j in range(0, len(sequence.seq) - BF.k):
+            for j in range(0, len(sequence.seq) - BF.k + 1):
                 kmer = str(sequence.seq[j: j + BF.k])
                 count = kmere.get(kmer, 0)
                 kmere[kmer] = count + 1
@@ -182,7 +182,7 @@ def test_oxa():
 def train_Core():
     """trains (concatenated-)genomes into BF and saves them"""
     # Enter a path that contains your concatenated sequences
-    files = os.listdir(r'F:\project\genomes\BioMonitoring\Bloomfilter\species')
+    files = os.listdir(r'F:\project\genomes\totrain')
     for i in range(len(files) -1, -1, -1):
         if 'fna' in files[i] or 'fasta' in files[i]:
             continue
@@ -196,17 +196,20 @@ def train_Core():
         #human prefilter: 23000000000; reversed: 46000000000
         #Aci prefilter: 3080000000
         #mosquito prefilter: 9000000
-        BF = BF_v2.AbaumanniiBloomfilter(350000)
-        BF.set_arraysize(350000)
+        BF = BF_v2.AbaumanniiBloomfilter(115000000)
+        BF.set_arraysize(115000000)
         BF.set_clonetypes(1)
         BF.set_hashes(7)
         BF.set_k(21)
-        path = r'F:/project/genomes/BioMonitoring/Bloomfilter/species/' + files[i]
+        genus = "Acinetobacter"
+        path = r'F:/project/genomes/totrain/' + files[i]
         name = files[i].split('.')[-2] + '.txt'
+        name_pos = files[i].split('.')[-2] + '_positions.txt'
         print("Trained: ", name)
         #  Enter path where your generated BF will be stored
         result = r'F:/project/results/' + name
         BF.train_sequence(path, 0)
+        BF.train_kmer_positions(path, name_pos, genus)
         BF.save_clonetypes(result)
         BF.cleanup()
 
@@ -630,9 +633,10 @@ def main():
     #openspec()
     #write_file5()
     #pw()
-    #train_Core()
-    write_file_dyn()
-    #train()
+    train_Core()
+    #write_file_dyn()
+    #train_genes()
+    #print("Hello World!")
     #remove_oxa()
     #divide_and_test()
     #count_distinct()

@@ -2,7 +2,7 @@ try:
     # try with a fast c-implementation ...
     import mmh3 as mmh3
 except ImportError:
-    # ... otherwise fallback to this code!
+    # ... otherwise fallback to this module!
     import pymmh3 as mmh3
 from bitarray import bitarray
 from Bio import SeqIO
@@ -12,7 +12,12 @@ from Bio.Seq import Seq
 import os
 import csv
 import time
-
+import h5py
+import pickle
+import Bootstrap as bs
+import statistics
+import psutil
+from pympler.tracker import SummaryTracker
 
 
 class AbaumanniiBloomfilter:
@@ -39,6 +44,7 @@ class AbaumanniiBloomfilter:
         self.array_size = arraysize
         self.kmeres = []
         self.hits_per_filter_kmere = []
+        self.kmer_hits_single = []
         self.coverage = []
         self.hit = False
     # Setter
@@ -199,6 +205,8 @@ class AbaumanniiBloomfilter:
         # control if element is in filter
         hits = [True] * self.clonetypes
         self.hit = False
+        # save the individual kmer-hit vector for bootstrapping
+        temp = [0] * self.clonetypes
 
         for i in range(self.clonetypes):
             row = i*self.array_size
@@ -214,6 +222,7 @@ class AbaumanniiBloomfilter:
                        self.matrix[positions[6] + row])
 
             if hits[i]:
+                temp[i] += 1
                 self.hit = True
                 if limit:
                     if self.table.lookup(self.names[i], kmer):
@@ -221,6 +230,7 @@ class AbaumanniiBloomfilter:
                 else:
                     # Update hit counter
                     self.hits_per_filter[i] += 1
+        self.kmer_hits_single.append(temp)
 
 
     def train(self, kmer, clonetype):
@@ -248,10 +258,48 @@ class AbaumanniiBloomfilter:
                 # for each k-mere
                 # for i in range(len(sequence.seq) - self.k + 1):
                 for i in range(len(sequence.seq) - self.k + 1):
+                    # tests which kmer ist lexicographic greater
+                    kmer = str(sequence.seq[i: i + self.k])
+                    kmer_complement = str(sequence.seq[i: i + self.k].reverse_complement())
                     # trains k-mere into filter
-                    self.train(str(sequence.seq[i: i + self.k]), clonetype)
+                    if kmer > kmer_complement:
+                        self.train(kmer, clonetype)
+                    else:
+                        self.train(kmer_complement, clonetype)
+                    # trains k-mere into filter
+                    #self.train(str(sequence.seq[i: i + self.k]), clonetype)
                     # testing
-                    self.train(str(sequence.seq[i: i + self.k].reverse_complement()), clonetype)
+                    #self.train(str(sequence.seq[i: i + self.k].reverse_complement()), clonetype)
+
+
+    def train_kmer_positions(self, filepath, name, genus):
+        """Erstellt eine Text-Datei welche die Position und Contig-ID eines jeden kmer speichert."""
+        # Pfad zum Output-Verzeichnis für die 21-mer-Positionen
+        output_dir = "filter\kmer_positions\\" + genus + "\\" + name
+        kmer_dict = {}
+        with h5py.File(output_dir, "a") as output_file:
+        # Schleife über alle Contigs im Input-Assembly
+        #with open(output_dir, "w") as output_file:
+            for record in SeqIO.parse(filepath, "fasta"):
+                # Extrahiere Kmer aus der Contig-Sequenz und speichere in der Ausgabedatei
+                 # Erstellen eines neuen Datensatzes im HDF5-File für den aktuellen Contig
+                contig_name = record.id
+                #contig_group = output_file.create_group(contig_name)
+
+                # Extrahiere Kmer aus der Contig-Sequenz und speichere in der HDF5-Datei
+                positions = []
+                kmers = []
+                for i in range(len(record.seq) - self.k + 1):
+                    kmer = str(record.seq[i:i+self.k])
+                    position = i + 1
+                    kmer_dict[kmer] = [position, contig_name]
+                    #kmers.append(kmer)
+                    #positions.append(position)
+
+                #contig_group.create_dataset("kmers", data=kmers)
+                #contig_group.create_dataset("positions", data=positions)
+        with open(output_dir, "wb") as output_file:
+            pickle.dump(kmer_dict, output_file)
 
 
 
@@ -285,22 +333,27 @@ class AbaumanniiBloomfilter:
                 self.number_of_kmeres += 1
 
 
-    def lookup_txt(self, reads, ext, quick=False):
+    def lookup_txt(self, reads, ext=False, quick=False):
         """ Reading extracted fq-reads"""
         self.number_of_kmeres = 0
         self.hits_per_filter = [0] * self.clonetypes
 
         if quick == 1:
             # Quick: Non-overlapping k-mers
-            # AspecT-Quick-Mode every 500th kmer
+            # XspecT-Quick-Mode every 500th kmer
             for single_read in reads:
                 # r is rest, so all kmers have size k
                 for j in range(0, len(single_read) - self.k, 500):
                     if "N" in single_read[j:j + self.k]:
                         continue
                     self.number_of_kmeres += 1
-                    self.lookup(single_read[j: j + self.k])
-        # AspecT Sequence-Reads every 10th kmer
+                    kmer = str(single_read[j: j + self.k])
+                    kmer_reversed = str(Seq(kmer).reverse_complement())
+                    if kmer > kmer_reversed:
+                        self.lookup(kmer)
+                    else:
+                        self.lookup(kmer_reversed)
+        # XspecT Sequence-Reads every 10th kmer
         elif quick == 2:
             for single_read in range(0, len(reads)):
                 hit_counter = 0
@@ -311,7 +364,12 @@ class AbaumanniiBloomfilter:
                     self.number_of_kmeres += 1
                     # lookup for kmer
                     temp = reads[single_read]
-                    self.lookup(str(temp[j: j + self.k]))
+                    kmer = str(temp[j: j + self.k])
+                    kmer_reversed = str(Seq(kmer).reverse_complement())
+                    if kmer > kmer_reversed:
+                        self.lookup(kmer)
+                    else:
+                        self.lookup(kmer_reversed)
                     if self.hit == True:
                         hit_counter += 1
         elif quick == 3:
@@ -322,30 +380,131 @@ class AbaumanniiBloomfilter:
                     if "N" in single_read[j:j + self.k]:
                         continue
                     self.number_of_kmeres += 1
-                    self.lookup(single_read[j: j + self.k])
+                    kmer = str(single_read[j: j + self.k])
+                    kmer_reversed = str(Seq(kmer).reverse_complement())
+                    if kmer > kmer_reversed:
+                        self.lookup(kmer)
+                    else:
+                        self.lookup(kmer_reversed)
         # metagenome mode
         elif quick == 4:
+           # tracker = SummaryTracker()
             counter = 0
-            #print("Kmer Anzahl: ", len(reads))
-            for kmer in reads:
-                counter += 1
-                # lookup for kmer
-                hits_per_filter_copy = self.hits_per_filter[:]
-                self.lookup(kmer)
-                if ((sum(self.hits_per_filter) - sum(hits_per_filter_copy)) <= 5) and ((sum(self.hits_per_filter) - sum(hits_per_filter_copy)) != 0):
+            reads_classified = {}
+            names = []
+            predictions = []
+            with open(r'filter/FilterSpecies.txt', 'rb') as fp:
+                names = pickle.load(fp)
+            for read in reads:
+                # since we do indv. contig classifications we need to reset the BF vars
+                self.kmer_hits_single = []
+                self.number_of_kmeres = 0
+                self.hits_per_filter = [0] * self.clonetypes
+                for kmer in read:
+                    counter += 1
+                    # lookup for kmer, use lexikographical smaller kmer
                     self.number_of_kmeres += 1
-                elif (sum(self.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
-                    self.hits_per_filter = hits_per_filter_copy[:]
-                if ext == "fasta" or ext == "fna" or ext == "fa":
-                    if counter >= 50000:
-                        break
+                    kmer_reversed = str(Seq(kmer).reverse_complement())
+                    if kmer > kmer_reversed:
+                        self.lookup(kmer)
+                    else:
+                        self.lookup(kmer_reversed)
+                score = self.get_score()
+                score_edit = [str(x) for x in score]
+                score_edit = ",".join(score_edit)
+                # making prediction
+                index_result = max(range(len(score)), key=score.__getitem__)
+                prediction = names[index_result]
+                predictions.append(prediction)
+                # skip ambiguous contigs
+                if max(score) == sorted(score)[-2]:
+                    continue
+                # bootstrapping
+                bootstrap_n = 100
+                samples = bs.bootstrap(self.kmer_hits_single, self.number_of_kmeres, bootstrap_n)
+                sample_scores = bs.bootstrap_scores(samples, self.number_of_kmeres, self.clonetypes)
+                bootstrap_score = 0
+                bootstrap_predictions = []
+                for i in range(len(sample_scores)):
+                    # skip ambiguous contigs (species with same score)
+                    if max(sample_scores[i]) != sorted(sample_scores[i])[-2]:
+                        bootstrap_predictions.append(names[max(range(len(sample_scores[i])), key=sample_scores[i].__getitem__)])
+                        if max(range(len(sample_scores[i])), key=sample_scores[i].__getitem__) == index_result:
+                            bootstrap_score += 1
+                    else:
+                        continue
+                bootstrap_score = bootstrap_score/bootstrap_n
+                #bootstrap_score = 1
+
+                if ("A." + prediction) not in reads_classified:
+                    # Value 5 war vohrer = read 
+                    reads_classified["A." + prediction] = [[max(score)], 1, [len(read)], sorted(score)[-2]/max(score), [bootstrap_score], None, None]
+                else:
+                    reads_classified["A." + prediction][0] += [max(score)]
+                    reads_classified["A." + prediction][1] += 1
+                    reads_classified["A." + prediction][2] += [len(read)]
+                    reads_classified["A." + prediction][3] += sorted(score)[-2]/max(score)
+                    reads_classified["A." + prediction][4] += [bootstrap_score]
+                    #reads_classified["A." + prediction][5] += None
+                #tracker.print_diff()
+            # not ready yet
+            """for prediction in reads_classified:
+                kmers = reads_classified[prediction][5]
+                # Strip "A."
+                prediction = prediction[2:]
+                # kmer mapping to genome, start by loading the kmer_dict in
+                path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
+                # delete later
+                path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
+                # cluster kmers to contigs
+                # delete try later
+                start_dict = time.time()
+                try:
+                    with open(path_pos, 'rb') as fp:
+                        kmer_dict = pickle.load(fp)
+                except:
+                    with open(path_posv2, 'rb') as fp:
+                        kmer_dict = pickle.load(fp)
+                end_dict = time.time()
+                needed_dict = round(end_dict - start_dict, 2)
+                print("Time needed to load kmer_dict in: ", needed_dict)
+                contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
+                reads_classified["A." + prediction][6] = contig_amounts_distances"""
+            
+            # print results 
+            for key, value in reads_classified.items():
+                    number_of_contigs = value[1]
+                     # save results
+                    results_clustering = [[key + "," + str(statistics.median(value[0])) + "," + str(number_of_contigs), str(statistics.median(value[2])) + "," + str(round(value[3]/number_of_contigs, 2)) + "," + str(statistics.median(value[4])) + "," + str(value[6])]]
+                    #with open(r'Results/XspecT_mini_csv/Results_Clustering.csv', 'a', newline='') as file:
+                        #writer = csv.writer(file)
+                        #writer.writerows(results_clustering)      
+                    # Score Median
+                    value[0] = statistics.median(value[0])
+                    # Number of Contigs
+                    value[1] = number_of_contigs
+                    # Contig-Length Median
+                    value[2] = statistics.median(value[2])
+                    # Uniqueness
+                    value[3] =  round(1-(value[3]/number_of_contigs), 2)
+                    # Bootstrap Median
+                    value[4] = statistics.median(value[4])
+                    #value[6] = "Clusters: " + str(value[6])
+                    reads_classified[key] = value
+            return reads_classified, predictions
+
         else:
             for single_read in reads:
                 for j in range(len(single_read) - self.k + 1):
                     # updating counter
                     self.number_of_kmeres += 1
                     # lookup for kmer
-                    self.lookup(str(single_read[j: j + self.k]))
+                    kmer = str(single_read[j: j + self.k])
+                    kmer_reversed = str(Seq(kmer).reverse_complement())
+                    if kmer > kmer_reversed:
+                        self.lookup(kmer)
+                    else:
+                        self.lookup(kmer_reversed)
 
 
     def lookup_unique(self, reads, quick=False):
@@ -441,6 +600,8 @@ class AbaumanniiBloomfilter:
         self.table.read_dic(r'filter/OXAs_dict/oxa_dict.txt')
         if ext == 'fq':
             # fq mode
+            coordinates_forward = []
+            coordinates_reversed = []
             for i in range(len(reads)):
                 # going through all reads, discarding those who don't get any hits with 3 test k-meres
 
@@ -637,5 +798,7 @@ class AbaumanniiBloomfilter:
                 score.append(0.0)
             else:
                 score.append(round(float(self.hits_per_filter[i]) / float(counter[self.names[i]]), 2))
+                #print(self.hits_per_filter[i], counter[self.names[i]])
+        # reset hits per filter
         self.hits_per_filter = [0] * self.clonetypes
         return score

@@ -8,8 +8,13 @@ bcrypt
 biopython
 bitarray
 mmh3
-pymmh3
 numpy
 pandas
 requests
 scikit-learn
+Psutil
+Matplotlib
+Pympler
+H5py
+ 
+
