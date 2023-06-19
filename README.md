@@ -48,9 +48,13 @@ pip install -r requirements.txt
 - pandas
 - requests
 - scikit-learn
+- Psutil
+- Matplotlib
+- Pympler
+- H5py
 
 #### Get the Bloomfilters
-Copy the following folder into your XspecT installation:
+Copy the folder that is located in the following directory into your XspecT installation:
 
 ```
 /share/project/dominik_s/XspecT/
@@ -76,6 +80,17 @@ To start the command line interface of XspecT use the following command line (on
 ```
 Python XspecT_mini.py
 ```
+
+#### How to use the XspecT command line interface:
+Open the file XspecT_mini.py with the configuration you want to run it with as arguments.
+
+```
+python3 XspecT_mini.py XspecT ClAssT Oxa Fastq 100000 Metagenome "path/to/your/input-set"
+```
+Important: 
+- If you use reads the number of reads needs to specified directly after the file-type
+- the path to your data-set is the last argument
+- all commands are explained in XspecT_mini Commands/.md
 
 ## Input Data
 XspecT is able to use either raw sequence-reads (FASTQ-format .fq/.fastq) or already assembled genomes (FASTA-format .fasta/.fna). Using sequence-reads saves up the assembly process but high-quality reads with a low error-rate are needed (e.g. Illumina-reads).
