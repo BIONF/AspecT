@@ -76,10 +76,6 @@ set FLASK_APP=flaskr
 set FLASK_ENV=development
 python app.py
 ```
-To start the command line interface of XspecT use the following command line (on all OS):
-```
-Python XspecT_mini.py
-```
 
 #### How to use the XspecT command line interface:
 Open the file XspecT_mini.py with the configuration you want to run it with as arguments.
