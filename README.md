@@ -49,6 +49,14 @@ pip install -r requirements.txt
 - requests
 - scikit-learn
 
+#### Get the Bloomfilters
+Copy the following folder into your XspecT installation:
+
+```
+/share/project/dominik_s/XspecT/
+```
+
+
 #### How to run the web-app: Local Deployment
 Run the following command lines in a console, a browser window will open automatically after the application is fully loaded.
 
