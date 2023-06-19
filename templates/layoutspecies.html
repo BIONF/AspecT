@@ -20,7 +20,7 @@
 
 
     <meta charset="UTF-8">
-    <title> AspecT </title>
+    <title> XspecT </title>
     <link rel="icon" href="data:,">
 </head>
 <body>
@@ -84,18 +84,28 @@
                         <div id="AspecTinput-3">
                         <p><input type="checkbox" name="metagenome" id="metagenome"/> Metagenome</p>
                         </div>
+                        <div>
                         <input type="checkbox" name="OXA" id="OXA"/> Oxa-Genes <br><br>
+                        </div>
+                        <div hidden id="AspecTinput-4">
+                        <p><input type="checkbox" name="Amplicon" id="Amplicon"/></p>
+                        </div>
                         <button class="btn btn-primary"  name="submit" id="submitspec">submit</button>
                         <p> </p>
                       </div>
                     </form>
             </div>
           <div class="content-section">
-            <h3> Taxonomy:</h3>
+            <h3> Taxonomy</h3>
               <p>
                 <b>Species:</b> {{prediction}} <br>
                 Results will not be saved, download them if needed!
               </p>
+              <p hidden>
+                <a id="download_data" download='image' class="download-btn">Download Results
+                  <i class="fa fa-download"></i>
+                  </a>
+            </p>
           </div>
         </div>
         <div class="col-md-8">
@@ -110,51 +120,101 @@
             </nav>
             <div class="tab-content" id="nav-tabContent">
               <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                <br>
+                  <h4 style="text-align: center; margin: 0 auto;">Most similar Acinetobacter species</h4>                                             
                 <img id="logo_XspecT" src="{{url_for('static', filename='Logo.png')}}" width="624" height="468" alt="Error: image not availabe"/>
                   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-                  <div id="plot_XspecT" class="chart-container" style="position: relative; height:72vh; width:63vw;display:none">
-                  <canvas id="polar-chart" width="950" height="500"></canvas>
+                  <div id="plot_XspecT" class="chart-container" style="position: relative; height:65vh; width:63vw;display:none">
+                  <canvas id="polar-chart" width="950" height="800"></canvas>
                     <script>
+                    var labels = {{ clonetypes|tojson }};
+                    var data = {{ results_ct }};
+                    var additionalInfo = {{ additional_info|tojson }};
+                    var metagenome = {{ metagenome|tojson }};
+
                     var myChart = new Chart(document.getElementById("polar-chart"), {
                         type: 'radar',
                         data: {
-                          labels: {{ clonetypes|tojson }},
+                          labels: labels,
                           datasets: [
                             {
                               label: "Score",
-                              backgroundColor: "transparent",
-                              borderColor: "rgba(195, 9, 34, 1)",
+                              borderColor: "rgb(255, 99, 132)",
+                              backgroundColor: "rgba(255, 99, 132, 0.5)",
                               scaleStartValue: 0,
-                              data: {{results_ct}}
+                              data: data
                             }
                           ]
                         },
                         options: {
-                        legend: {
-                        display: false
-                        },
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scale: {
-                            ticks: {
-                                beginAtZero: true,
-                                max: {{ maxi |tojson}},
-                                min: 0,
-                                //stepSize: 1
-                            }
-                        },
-                          title: {
-                            display: true,
-                            text: "Most similar Acinetobacter species"
+                          legend: {
+                          display: false
                           },
-                          animation: {
-                            onComplete: function() {
-                                this.options.animation.onComplete = null;
-                                var plot_image = myChart.toBase64Image();
-                                document.getElementById("download_plot").href = plot_image;
-                                document.getElementById("download_plot").download = {{prediction | tojson}} + ".png";
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scale: {
+                              ticks: {
+                                  beginAtZero: true,
+                                  max: {{ maxi |tojson}},
+                                  min: 0,
+                                  //stepSize: 1
+                              }
+                          },
+                            title: {
+                              display: false,
+                              text: {{text | tojson}},
+                              fontSize: 24
+                            },
+                            tooltips: {
+                              displayColors: false,
+                              callbacks: {
+                                title: function(tooltipItems, data) {
+                                  if (metagenome === true) {
+                                    return null; // Rückgabe von null, um das Titel-Label zu entfernen
+                                  } else {
+                                    var dataIndex = tooltipItems[0].index;
+                                    return data.labels[dataIndex]; // Rückgabe des normalen Titel-Labels
+                                  }
+                                },
+                                label: function(tooltipItem, data) {
+                                  if (metagenome === true) {
+                                    return null; // Rückgabe von null, um den Wert aus dem Tooltip zu entfernen
+                                  } else {
+                                    var dataIndex = tooltipItem.index;
+                                    return "Score: " + data.datasets[0].data[dataIndex]; // Rückgabe des normalen Werts
+                                  }
+                                },
+                                afterBody: function(tooltipItems, data) {
+                                  if (metagenome === true) {
+                                    var dataIndex = tooltipItems[0].index;
+                                    var info = additionalInfo[dataIndex];
+
+                                    // Aufteilen der Informationen in separate Zeilen
+                                    var infoLines = info.split("\n");
+
+                                    var tooltipContent = [];
+
+                                    // Jede Information als einzelnen String hinzufügen
+                                    for (var i = 0; i < infoLines.length; i++) {
+                                      tooltipContent.push(infoLines[i]);
+                                    }
+
+                                    return tooltipContent;
+                                  } 
+                                  else {
+                                  return null; // Rückgabe von null, wenn die Bedingung nicht erfüllt ist
+                                  }
+                                }
+                              }
+                            },
+                            animation: {
+                              onComplete: function() {
+                                  this.options.animation.onComplete = null;
+                                  var plot_image = myChart.toBase64Image();
+                                  document.getElementById("download_plot").href = plot_image;
+                                  document.getElementById("download_plot").download = {{prediction | tojson}} + ".png";
+                          }
                         }
-                      }
                     }
                     });
 
@@ -162,19 +222,21 @@
                     </div>
                 <br>
                 <div id="plot_text" style="display: none">
-                <h4> Assigned species: {{prediction}} </h4>
+                <h5> Assigned species: {{prediction}} </h5> 
                 <br>
-                <a id="download_plot" download='image' class="download-btn">Download Plot
-                  <i class="fa fa-download"></i>
-                  </a>
+                <a id="download_plot" download="image" class="download-btn" style="text-decoration: none;">
+                  Download Plot <i class="fa fa-download"></i>
+                </a>
                   <br>
                   <br>
                   </div>
                 </div>
 
                 <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                  <br>
+                  <h4 style="text-align:center;" > A. baumannii Sub-Types </h4>
                   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-                  <div class="chart-container" style="position: relative; height:72vh; width:63vw">
+                  <div class="chart-container" style="position: relative; height:65vh; width:63vw">
                   <canvas id="polar-chart-claast" width="950" height="500"></canvas>
                     <script>
                     var myChart3 = new Chart(document.getElementById("polar-chart-claast"), {
@@ -184,8 +246,8 @@
                           datasets: [
                             {
                               label: "Score",
-                              backgroundColor: "transparent",
-                              borderColor: "rgba(195, 9, 34, 1)",
+                              borderColor: "rgb(54, 162, 235",
+                              backgroundColor: "rgb(54, 162, 235, 0.5)",
                               scaleStartValue: 0,
                               data: {{results_claast}}
                             }
@@ -206,7 +268,7 @@
                             }
                         },
                           title: {
-                            display: true,
+                            display: false,
                             text: "A. baumannii Sub-Types"
                           },
                           animation: {
@@ -222,17 +284,12 @@
                     </script>
                   </div>
                   <br>
-                  <h4> Sub-Type: {{prediction_claast}} </h4>
+                  <h5> Sub-Type: {{prediction_claast}} </h5>
                   <br>
-                  <div>
-                  <h4> Assigned species: {{prediction}} </h4>
-                  <br>
+                
                   <a id="download_plot_3" download='image' class="download-btn">Download Plot
                     <i class="fa fa-download"></i>
                     </a>
-                    <br>
-                    <br>
-                    </div>
                     </div>
 
 
@@ -299,41 +356,52 @@
               <div class="span4 collapse-group" style="text-align: left">
                 <div class="media-body">
                   <br>
-                    <h2 style="text-align:center; color:rgba(33, 3, 201, 1)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
+                    <h2 style="text-align:center; color:rgb(255, 159, 64)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
                     <p> </p>
                     <h4 style="text-align:center;"> Percentage of found k-meres in the reference-data</h4>
                     <p style="text-align:center;"> A OXA-Family is most likely seen as present if it passes a threshold of 0.3 .</p>
                     <div style = "text-align:center;">
                         <!-- https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/#4-radar-chart -->
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.3.0/chart.min.js"></script>
                       <canvas id="oxa-chart" width="750" height="375"></canvas>
                           <script>
                           // Source:
                           //https://stackoverflow.com/questions/40254027/horizontal-bar-chart-in-chart-js
+                            var metagenome = {{ metagenome|tojson }};
+                            if (metagenome === true) {
+                                  var oxas = {{ oxa_labels|tojson }};
+                                  var results_oxa = {{ oxa_data|tojson }};
+                                } else {
+                                  var oxas = {{ oxas|tojson }};
+                                  var results_oxa = {{ results_oxa|tojson }};
+                                } 
                             var myChart2 = new Chart(document.getElementById("oxa-chart"), {
-                              type: 'horizontalBar',
+                              type: 'bar',
                               data: {
-                                labels: {{ oxas|tojson }},
+                                labels: oxas,
                                 datasets: [
                                   {
-                                    label: "percentege of found k-meres in reference-data",
-                                    backgroundColor: "rgba(33, 3, 201, 1)",
+                                    label: "percentage of found k-meres in reference-data",
+                                    backgroundColor: "rgb(255, 159, 64)",
                                     //hoverBackgroundColor: "rgba(33, 3, 201, 1)",
-                                    data: {{ results_oxa }}
+                                    data: results_oxa, 
                                   }
                                 ]
                               },
                               options: {
                                   scales: {
-                                      xAxes: [{
-                                          ticks: {
-                                              min: 0,
-                                              max: 1
-                                          }
-                                      }],
-                                      yAxes: [{
-                                          stacked: true
-                                      }]
+                                    xAxes: [{
+                                      barPercentage: 0.2,
+                                      source: 'data',
+                                      autoSkip: false
+                                    }],
+                                    yAxes: [{
+                                      stacked: true,
+                                      ticks: {
+                                        min: 0,
+                                        max: 1,
+                                      }
+                                    }]
                                   },
                                   animation: {
                                     onComplete: function() {

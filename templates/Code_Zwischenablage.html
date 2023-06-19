@@ -1,0 +1,90 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<div id="plot_XspecT" class="chart-container" style="position: relative; height:72vh; width:63vw;display:none">
+  <canvas id="doughnut-chart" width="950" height="500"></canvas>
+</div>
+<script>
+  var labels = {{ clonetypes|tojson }};
+  var data = {{ results_ct }};
+  var additionalInfo = {{ additional_info|tojson }};
+  var metagenome = {{ metagenome|tojson }};
+
+  var ctx = document.getElementById('doughnut-chart').getContext('2d');
+  var myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#8F398F"],
+        borderColor: "transparent",
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      title: {
+        display: true,
+        text: {{text | tojson}},
+      },
+      legend: {
+        display: true,
+        position: 'right',
+      },
+      plugins: {
+        datalabels: {
+          color: '#000',
+          font: {
+            weight: 'bold'
+          },
+          formatter: function(value, context) {
+            return context.chart.data.labels[context.dataIndex];
+          }
+        }
+      },
+      tooltips: {
+        displayColors: false,
+        callbacks: {
+          title: function(tooltipItems, data) {
+            if (metagenome === false) {
+              return null; // Rückgabe von null, um das Titel-Label zu entfernen
+            } else {
+              return tooltipItems[0].label; // Rückgabe des normalen Titel-Labels
+            }
+          },
+          label: function(tooltipItem, data) {
+            if (metagenome === false) {
+              return null; // Rückgabe von null, um den Wert aus dem Tooltip zu entfernen
+            } else {
+              return tooltipItem.value; // Rückgabe des normalen Werts
+            }
+          },
+          afterBody: function(tooltipItems, data) {
+            var dataIndex = tooltipItems[0].index;
+            var info = additionalInfo[dataIndex];
+
+            // Aufteilen der Informationen in separate Zeilen
+            var infoLines = info.split("\n");
+
+            var tooltipContent = [];
+
+            // Jede Information als einzelnen String hinzufügen
+            for (var i = 0; i < infoLines.length; i++) {
+              tooltipContent.push(infoLines[i]);
+            }
+
+            return tooltipContent;
+          }
+        }
+      },
+      animation: {
+        onComplete: function() {
+          this.options.animation.onComplete = null;
+          var plot_image = myChart.toBase64Image();
+          document.getElementById("download_plot").href = plot_image;
+          document.getElementById("download_plot").download = {{prediction | tojson}} + ".png";
+        }
+      }
+    }
+  });
+</script

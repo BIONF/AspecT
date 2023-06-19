@@ -148,8 +148,8 @@
                           datasets: [
                             {
                               label: "Score",
-                              backgroundColor: "transparent",
-                              borderColor: "rgba(195, 9, 34, 1)",
+                              borderColor: "rgb(54, 162, 235",
+                              backgroundColor: "rgb(54, 162, 235, 0.5)",
                               scaleStartValue: 0,
                               data: {{results_ct}}
                             }
@@ -258,7 +258,7 @@
               <div class="span4 collapse-group" style="text-align: left">
                 <div class="media-body">
                   <br>
-                    <h2 style="text-align:center; color:rgba(33, 3, 201, 1)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
+                    <h2 style="text-align:center; color:rgb(255, 159, 64)" > beta-lactamase oxacillinase (bla-OXA) genes </h2>
                     <p> </p>
                     <h4 style="text-align:center;"> Percentage of found k-meres in the reference-data</h4>
                     <p style="text-align:center;"> A OXA-Family is most likely seen as present if it passes a threshold of 0.3 .</p>
@@ -270,13 +270,13 @@
                           // Source:
                           //https://stackoverflow.com/questions/40254027/horizontal-bar-chart-in-chart-js
                             var myChart2 = new Chart(document.getElementById("oxa-chart"), {
-                              type: 'horizontalBar',
+                              type: 'bar',
                               data: {
                                 labels: {{ oxas|tojson }},
                                 datasets: [
                                   {
                                     label: "percentege of found k-meres in reference-data",
-                                    backgroundColor: "rgba(33, 3, 201, 1)",
+                                    backgroundColor: "rgb(255, 159, 64)",
                                     //hoverBackgroundColor: "rgba(33, 3, 201, 1)",
                                     data: {{ results_oxa }}
                                   }
@@ -284,13 +284,13 @@
                               },
                               options: {
                                   scales: {
-                                      xAxes: [{
+                                      yAxes: [{
                                           ticks: {
                                               min: 0,
                                               max: 1
                                           }
                                       }],
-                                      yAxes: [{
+                                      xAxes: [{
                                           stacked: true
                                       }]
                                   },
