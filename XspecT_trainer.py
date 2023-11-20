@@ -15,7 +15,7 @@ from numpy import mean
 from train_filter.ncbi_api import ncbi_assembly_metadata, ncbi_taxon_metadata, ncbi_children_tree, download_assemblies
 
 from train_filter import create_svm, html_scrap, extract_and_concatenate, get_paths, \
-    interface_XspecT, k_mer_count, backup_filter
+    interface_XspecT, k_mer_count, backup_filter, check_folders
 
 
 def check_user_input(user_input: str):
@@ -183,10 +183,6 @@ def check_meta_file_content(dir_name: str):
                     logger.info(f"{file} in metagenome")
 
 
-
-
-
-
 def init_argparse() -> argparse.ArgumentParser:
     """Initiate the command line parser for XspecT-trainer.py"""
     parser = argparse.ArgumentParser(
@@ -301,6 +297,9 @@ def main():
         spacing = 1
     else:
         spacing = 500
+
+    # Check folder structure
+    check_folders.check_folder_structure()
 
     # Check user input.
     genus = check_user_input(user_input=genus)
