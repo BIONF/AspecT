@@ -16,5 +16,6 @@ Psutil
 Matplotlib
 Pympler
 H5py
- 
-
+Bio
+wheel
+loguru
