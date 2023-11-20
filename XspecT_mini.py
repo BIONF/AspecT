@@ -18,12 +18,16 @@ from collections import Counter
 import psutil
 import Bootstrap as bs
 import sys
+from pathlib import Path
+#import map_kmers as map
+from train_filter.interface_XspecT import load_translation_dict
 
+from bitarray import bitarray
 
 warnings.filterwarnings("ignore")
 
 
-def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_table, metagenome):
+def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_table, metagenome, genus, mode):
     """performs a BF-lookup for a set of genomes for testing purpose"""
     itemlist = ["albensis", "apis", "baretiae", "baumannii", "baylyi", "beijerinckii", "bereziniae",
                 "bohemicus", "boissieri", "bouvetii", "brisouii", "calcoaceticus",
@@ -41,26 +45,36 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
     print("Preparing Bloomfilter...")
     start = time.time()
     if XspecT:
-        BF = search_filter.pre_processing()
+        #BF = search_filter.pre_processing()
+        #Phillip
+        # Getting the array sizes for pre processing of all bloomfilters.
+        genera = search_filter.get_genera_array_sizes()
+
+        # Pre processing of the bloomfilters for the species.
+        BF = search_filter.pre_process_all(genera, k=21, meta_mode=False, genus=[genus])
+
          # aktuelle Speichernutzung auslesen
         process = psutil.Process()
         memory_info = process.memory_info()
         # Ausgabe des Speicherverbrauchs
         print(f"Aktueller Speicherverbrauch mit den Spezies BF: {memory_info.rss / 1024 / 1024:.2f} MB")
+
         # BF_1 = search_filter.pre_processing_prefilter()
-        BF_1_1 = search_filter.pre_processing_prefilter2()
+        #BF_1_1 = search_filter.pre_processing_prefilter2()
+        #Phillip
+        # Pre processing of the bloomfilters for the metagenome mode.
+        BF_1_1 = search_filter.pre_process_all(genera, k=21, meta_mode=True, genus=[genus])
+
          # aktuelle Speichernutzung auslesen
         process = psutil.Process()
         memory_info = process.memory_info()
         # Ausgabe des Speicherverbrauchs
         print(f"Aktueller Speicherverbrauch mit dem Master BF: {memory_info.rss / 1024 / 1024:.2f} MB")
+
     if ClAssT:
         BF_2 = search_filter.pre_processing_ClAssT()
     if oxa:
         BF_3 = search_filter.pre_processing_oxa()
-    #if BioMonitoring:
-        #BF = search_filter.pre_processing_Culicidae_species()
-        #BF_1_1 = search_filter.pre_processing_prefilter_Culicidae()
     end = time.time()
     needed = round(end - start, 2)
     print("Time needed for preprocessing: ", needed)
@@ -125,7 +139,7 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
     #    writer.writerows(excelv3)
     if XspecT:
         predictions, scores = xspecT(
-            BF, BF_1_1, files, paths, file_format, read_amount, metagenome)
+            BF[genus], BF_1_1[genus], files, paths, file_format, read_amount, metagenome, genus, mode)
     if ClAssT:
         predictions_ClAssT, scores_ClAssT = clAssT(
             BF_2, files, paths, file_format, read_amount)
@@ -322,14 +336,28 @@ def xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_ta
         print("")
 
 
-def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
+def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome, genus, mode):
     """performs a BF-lookup for a set of genomes for testing purpose"""
+    matrix: bitarray
+    matrix = BF_1_1.matrix
+    ones = matrix.count(1)
+    zeroes = matrix.count(0)
+    print(f"1: {ones}, 0: {zeroes}")
+    print(f"len: {len(matrix)}, sum: {ones+zeroes}")
+
     print("Starting taxonomic assignment on species-level...")
     predictions = []
     scores = []
     counterx = 0
     contig_header = []
     contig_seq = []
+    # Phillip
+    names_path = Path(__file__).parent.absolute() / 'filter' / 'species_names' / ('Filter' + genus + '.txt')
+    with open(names_path, 'rb') as fp:
+        names = pickle.load(fp)
+    names = sorted(names)
+    translation_dict = load_translation_dict(genus)
+    #
     for i in range(len(files)):
         if i == int(len(files)/6) or i == int(len(files)/3) or i == int(len(files)/2) or i == int(len(files)/1.5) or i == int(len(files)/1.2):
             print("...")
@@ -359,15 +387,14 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 
 		            # needs at least 70% hits to continue with the contig
                     counter = 0
-                    #print((sum(BF_1_1.hits_per_filter) - hit_sum), threshold_contig)
+                    print(f"Sum: {sum(BF_1_1.hits_per_filter)}; threshold: {threshold_contig}")
                     if (sum(BF_1_1.hits_per_filter) - hit_sum) > threshold_contig:
-                        #print("added")
                         for j in range(len(str(sequence.seq)) - BF_1_1.k):
                             if "N" not in str(sequence.seq[j: j + BF_1_1.k]):
                                 contigs_kmers.append(str(sequence.seq[j: j + BF_1_1.k]).upper())
                                 counter += 1
                                 # how many kmers? to use
-                                if counter >= 5000:
+                                if counter >= 5000000:
                                     break
 		                # contigs_kmers.append(str(reverse_sequence[j: j + BF_1_1.k]))
                         contigs.append(contigs_kmers)
@@ -376,12 +403,6 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		                # resetting hit counter
                         BF_1_1.hits_per_filter = hits_per_filter_copy
                         continue
-
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 1: {memory_info.rss / 1024 / 1024:.2f} MB")
 
                     contigs_filtered = []
                     counter = 0
@@ -401,12 +422,6 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                         if counter >= 5000:
                             break
 
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 2: {memory_info.rss / 1024 / 1024:.2f} MB")
-
                     # since we do indv. contig classifications we need to reset the BF vars
                     BF.kmer_hits_single = []
                     BF.number_of_kmeres = 0
@@ -419,35 +434,16 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                         else:
                             BF.lookup(kmer_reversed)
                     score = BF.get_score()
-                    names = []
-                    BioMonitoring = False
-                    if BioMonitoring:
-                        with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
-                            names = pickle.load(fp)
-                    else:
-                        with open(r'filter/FilterSpecies.txt', 'rb') as fp:
-                            names = pickle.load(fp)
                     score_edit = [str(x) for x in score]
                     score_edit = ",".join(score_edit)
+
                     # making prediction
                     index_result = max(range(len(score)), key=score.__getitem__)
                     prediction = names[index_result]
 
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 3: {memory_info.rss / 1024 / 1024:.2f} MB")
-
                     # skip ambiguous contigs
                     if max(score) == sorted(score)[-2]:
                         continue
-
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 4: {memory_info.rss / 1024 / 1024:.2f} MB")
 
                     # bootstrapping
                     bootstrap_n = 100
@@ -465,44 +461,32 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                             continue
                     bootstrap_score = bootstrap_score/bootstrap_n
 
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 5: {memory_info.rss / 1024 / 1024:.2f} MB")
-
+                    # ---------------------------------------------------------------------------------------------
+                    # Collect results
                     # change this var to the species you want your contigs saved from
                     save_contigs = "none"
 
-                    # saving predictions for the Bio-Monitoring
-                    if BioMonitoring:
-                        predictions.append(prediction)
-                        scores.append(str(max(score)))
+                    if (genus[0] + ". " + prediction) not in contigs_classified:
+                        contigs_classified[genus[0] + ". " + prediction] = [[max(score)], 1, [len(str(sequence.seq))], sorted(score)[-2]/max(score), [bootstrap_score], contigs_filtered, None]
+                        if prediction == save_contigs:
+                            contig_header += [sequence.description]
+                            contig_seq += [str(sequence.seq)]
                     else:
-                        if ("A." + prediction) not in contigs_classified:
-                            contigs_classified["A." + prediction] = [[max(score)], 1, [len(str(sequence.seq))], sorted(score)[-2]/max(score), [bootstrap_score], contigs_filtered, None]
-                            if prediction == save_contigs:
-                                contig_header += [sequence.description]
-                                contig_seq += [str(sequence.seq)]
-                        else:
-                            contigs_classified["A." + prediction][0] += [max(score)]
-                            contigs_classified["A." + prediction][1] += 1
-                            contigs_classified["A." + prediction][2] += [len(str(sequence.seq))]
-                            contigs_classified["A." + prediction][3] += sorted(score)[-2]/max(score)
-                            contigs_classified["A." + prediction][4] += [bootstrap_score]
-                            contigs_classified["A." + prediction][5] += contigs_filtered
-                            if prediction == save_contigs:
-                                contig_header += [sequence.description]
-                                contig_seq += [str(sequence.seq)]
-                            #scores.append(str(max(score)))
-                    # aktuelle Speichernutzung auslesen
-                    process = psutil.Process()
-                    memory_info = process.memory_info()
-                    # Ausgabe des Speicherverbrauchs
-                    #print(f"Aktueller Speicherverbrauch 6: {memory_info.rss / 1024 / 1024:.2f} MB")
+                        contigs_classified[genus[0] + ". " + prediction][0] += [max(score)]
+                        contigs_classified[genus[0] + ". " + prediction][1] += 1
+                        contigs_classified[genus[0] + ". " + prediction][2] += [len(str(sequence.seq))]
+                        contigs_classified[genus[0] + ". " + prediction][3] += sorted(score)[-2]/max(score)
+                        contigs_classified[genus[0] + ". " + prediction][4] += [bootstrap_score]
+                        contigs_classified[genus[0] + ". " + prediction][5] += contigs_filtered
+                        if prediction == save_contigs:
+                            contig_header += [sequence.description]
+                            contig_seq += [str(sequence.seq)]
+                        #scores.append(str(max(score)))
             else:
+                # Important! Resetting the kmer_hits_single otherwise MEMORY LEAK
+                BF.kmer_hits_single = []
                 for sequence in SeqIO.parse(paths[i], "fasta"):
-                    for j in range(0, len(sequence.seq) - BF.k, 500):
+                    for j in range(0, len(sequence.seq) - BF.k, mode):
                         BF.number_of_kmeres += 1
                         kmer = str(sequence.seq[j : j + BF.k])
                         kmer_reversed = str(Seq(kmer).reverse_complement())
@@ -514,25 +498,28 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
             score = BF.get_score()
             #print("Scores: ", score)
             if metagenome:
-                for prediction in contigs_classified:
-                    kmers = contigs_classified[prediction][5]
-                    # Strip "A."
-                    prediction = prediction[2:]
-                    # kmer mapping to genome, start by loading the kmer_dict in
-                    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
-                    # delete later
-                    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
-                    # cluster kmers to contigs
-                    # delete try later
-                    try:
-                        with open(path_pos, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    except:
-                        with open(path_posv2, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
-                    contigs_classified["A." + prediction][6] = contig_amounts_distances
-                    #del kmer_dict
+                # map kmers to genome for HGT detection
+                # change later to new functions this is OLD
+                if False:
+                    for prediction in contigs_classified:
+                        kmers = contigs_classified[prediction][5]
+                        # Strip "A."
+                        prediction = prediction[2:]
+                        # kmer mapping to genome, start by loading the kmer_dict in
+                        path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
+                        # delete later
+                        path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
+                        # cluster kmers to contigs
+                        # delete try later
+                        try:
+                            with open(path_pos, 'rb') as fp:
+                                kmer_dict = pickle.load(fp)
+                        except:
+                            with open(path_posv2, 'rb') as fp:
+                                kmer_dict = pickle.load(fp)
+                        contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
+                        contigs_classified[genus[0] + ". " + prediction][6] = contig_amounts_distances
+                        #del kmer_dict
                 for key, value in contigs_classified.items():
                     number_of_contigs = value[1]
                      # save results
@@ -555,11 +542,7 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                     print(value[4])
                     print(value[6])
                     print()
-                # aktuelle Speichernutzung auslesen
-                process = psutil.Process()
-                memory_info = process.memory_info()
-                # Ausgabe des Speicherverbrauchs
-                print(f"Aktueller Speicherverbrauch: {memory_info.rss / 1024 / 1024:.2f} MB")
+
                 save_contigs = "none"
                 if save_contigs != "none":
                     with open(r"Results/Contigs_saved.fasta", 'w') as file:
@@ -569,6 +552,8 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                             file.write("\n")
         elif file_format == "fastq" or file_format == "fq":
             if metagenome:
+                # ---------------------------------------------------------------------------------------------
+                # initialize variables
                 BF_1_1.kmer_hits_single = []
                 BF_1_1.number_of_kmeres = 0
                 BF_1_1.hits_per_filter = [0] * BF.clonetypes
@@ -577,7 +562,12 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                 reads_classified = {}
                 reads_passed = 0
                 ambiguous_reads = 0
+
+                # ---------------------------------------------------------------------------------------------
+                # First prefiltering step: Check if read contains at least 3 kmeres
                 for sequence in SeqIO.parse(paths[i], "fastq"):
+                    dna_composition = {}
+                    dna_composition = calculate_dna_composition(sequence.seq)
                     BF_1_1.kmer_hits_single = []
                     BF_1_1.number_of_kmeres = 0
                     BF_1_1.hits_per_filter = [0] * BF.clonetypes
@@ -618,23 +608,17 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
 		                # read_kmers.append(str(reverse_sequence[j: j + BF_1_1.k]))
                         reads.append(read_kmers)
                         BF_1_1.hits_per_filter = hits_per_filter_copy
-                        #print("Read passed 1. Threshold")
                     else:
 		                # resetting hit counter
                         BF_1_1.hits_per_filter = hits_per_filter_copy
                         continue
+
+                    # ---------------------------------------------------------------------------------------------
+                    # Second prefiltering step: Check if read contains at least 80% of kmers from one species
                     #reads_filtered = set()
                     reads_filtered = []
-                    #print("Read-Length: ", len(reads[0]))
                     for i in range(len(reads)):
                         threshold = 0
-    		            # hits_per_filter_copy = BF_1.hits_per_filter[:]
-    		            # read_len = len(reads[i])
-    		            # BF_1.lookup(reads[i][0])
-    		            # BF_1.lookup(reads[i][int(read_len/2)])
-    		            # BF_1.lookup(reads[i][-1])
-    		            # if (BF_1.hits_per_filter[0] - hits_per_filter_copy[0]) < 2:
-    		            #    continue
                         for j in range(len(reads[i])):
                             BF_1_1.number_of_kmeres += 1
                             hits_per_filter_copy = BF_1_1.hits_per_filter[:]
@@ -642,16 +626,13 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                                 BF_1_1.lookup(reads[i][j])
                             if hits_per_filter_copy != BF_1_1.hits_per_filter:
                                 threshold += 1
-                        if threshold >= 0.8 * len(reads[i]):
+                        if threshold >= 0.7 * len(reads[i]):
                             reads_filtered += reads[i]
                     if len(reads_filtered) == 0:
                         continue
-                    #else:
-                        #reads_passed += 1
-    		                    # reads_filtered.add(reads[i][j])
-    		                    # reads_filtered.append(reads[i][j])
-    		            # reads_filtered.append(list(read_kmers_filtered_unique))
-                        #print("Kmer Anzahl: ", len(reads_filtered))
+                    
+                    # ---------------------------------------------------------------------------------------------
+                    # Start of the actual classification 
                     BF.number_of_kmeres = 0
                     BF.hits_per_filter = [0] * BF.clonetypes
                     BF.kmer_hits_single = []
@@ -665,38 +646,19 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                                 BF.lookup(kmer_reversed)
                         else:
                             continue
-                        #BF.number_of_kmeres += 1
-                        #if ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) <= 5) and ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) != 0):
-                            # PLatzhalter
-                            #BF.number_of_kmeres += 1
-                        #elif (sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
-                            #BF.hits_per_filter = hits_per_filter_copy[:]
-                            # PLatzhalter
-                            #BF.number_of_kmeres += 0
-                    #print(BF.hits_per_filter)
                     score = BF.get_score()
-                    names = []
-                    BioMonitoring = False
-                    if BioMonitoring:
-                        with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
-                            names = pickle.load(fp)
-                    else:
-                        with open(r'filter/FilterSpecies.txt', 'rb') as fp:
-                            names = pickle.load(fp)
                     score_edit = [str(x) for x in score]
                     score_edit = ",".join(score_edit)
+
                     # making prediction
                     index_result = max(range(len(score)), key=score.__getitem__)
                     prediction = names[index_result]
                     if max(score) == sorted(score)[-2]:
                         ambiguous_reads += 1
-                        continue
-                    #print(prediction, max(score), sorted(score)[-2]/max(score))
-                    #if max(score) == 0:
+                        #print("Ambiguous read")
                         #continue
-                    # Repetiviness threshold
-                    #if sorted(score)[-2]/max(score) > 0.6:
-                        #continue
+
+                    # ---------------------------------------------------------------------------------------------
                     # bootstrapping
                     bootstrap_n = 100
                     samples = bs.bootstrap(BF.kmer_hits_single, BF.number_of_kmeres, bootstrap_n)
@@ -711,95 +673,45 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                         else:
                             continue
                     bootstrap_score = bootstrap_score/bootstrap_n
-                    #count = Counter(bootstrap_predictions)
-                    #max_element = max(count, key=count.get)
-                    #bootstrap_result = [max_element, count[max_element]]
-                    #controle = array(BF.kmer_hits_single)
-                    #temp = sum(controle, 0)
-                    #controle_score = []
-                    #for j in range(BF.clonetypes):
-                    #    if temp[j] == 0:
-                        #    controle_score.append(0.0)
-                        #else:
-                            #controle_score.append(round(float(temp[j]) / float(BF.number_of_kmeres), 2))
-                    #print(len(BF.kmer_hits_single))
-                    #print(temp)
-                    #print("Controle Score: ",controle_score)
-                    #print("OG Score: ",score)
-                    #print(bootstrap_score)
-                    #if bootstrap_score < 0.3:
-                        #print(score)
-                        #print("Original prediction: ",prediction, " BT result: ", bootstrap_result)
-                    #if prediction != "baumannii" and max(score) >= 0.3:
-                        #print(BF.hits_per_filter)
-                        #print(prediction, sorted(score)[-2]/max(score))
-                        #if sorted(score)[-2]/max(score) >= 0.6:
-                            #continue
-                    #elif prediction == "baumannii":
-                        #if sorted(score)[-2]/max(score) >= 0.6:
-                            #continue
-                    if False:
-                    #if max(score) < 0.3:
-                        if "unkown" not in reads_classified:
-                            reads_classified["unknown"] = [1]
-                        else:
-                            reads_classified["unknown"][0] += 1
-                        #scores.append(str(max(score)))
+
+                    # ---------------------------------------------------------------------------------------------
+                    # HGT identification pipeline start
+
+
+                    # identify split reads from HGT
+                    #split_regions = map.identify_split_reads(score, BF.kmer_hits_single)
+
+                    # split_read contains touples --> ([start, end], index of species)
+                    
+                    # get involed species
+                    #split_reads_species = []
+                    #if split_regions:
+                    #    split_reads_species.append(names[split_regions[0][1]])
+                    #    split_reads_species.append(names[split_regions[1][1]])
+
+
+                    # ---------------------------------------------------------------------------------------------
+                    # Collect results from classification
+                    if (genus[0] + ". " + prediction) not in reads_classified:
+                        reads_classified[genus[0] + ". " + prediction] = [max(score), 1, sorted(score)[-2]/max(score),  BF.number_of_kmeres, [bootstrap_score], reads_filtered, None, [dna_composition]]
                     else:
-                        if BioMonitoring:
-                            predictions.append(prediction)
-                            scores.append(str(max(score)))
-                        else:
-                            if ("A." + prediction) not in reads_classified:
-                                reads_classified["A." + prediction] = [max(score), 1, sorted(score)[-2]/max(score),  BF.number_of_kmeres, [bootstrap_score], reads_filtered, None]
-                            else:
-                                reads_classified["A." + prediction][1] += 1
-                                reads_classified["A." + prediction][0] += max(score)
-                                reads_classified["A." + prediction][2] += sorted(score)[-2]/max(score)
-                                reads_classified["A." + prediction][3] += BF.number_of_kmeres
-                                reads_classified["A." + prediction][4] += [bootstrap_score]
-                                reads_classified["A." + prediction][5] += reads_filtered
-		        # for i in range(len(reads_filtered)):
-		            # hits_per_filter_copy = BF.hits_per_filter[:]
-		            # read_len = len(reads_filtered[i])
-		            # BF.lookup(reads[i][0])
-		            # BF.lookup(reads[i][int(read_len/2)])
-		            # BF.lookup(reads[i][-1])
-		            # for j in range(len(reads_filtered[i])):
-		            #    hits_per_filter_copy = BF.hits_per_filter[:]
-		                # BF.lookup(reads_filtered[i][j])
-		                # if (sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) == 0:
-		                #    continue
-		                # if ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) <= 5) and ((sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) != 0):
-		                #    BF.number_of_kmeres += 1
-		                    # if BF.hits_per_filter[50] != hits_per_filter_copy[50]:
-		                    #    print(reads_filtered[i][j])
-		                # elif (sum(BF.hits_per_filter) - sum(hits_per_filter_copy)) > 5:
-		                #    BF.hits_per_filter = hits_per_filter_copy[:]
-		    #    for sequence in SeqIO.parse(paths[i], "fastq"):
-		    #        if counter < read_amount:
-		    #            counter += 1
-		    #            for j in range(0, len(sequence.seq) - BF.k+1, 10):
-		    #                BF.number_of_kmeres += 1
-		    #                BF.lookup(str(sequence.seq[j: j + BF.k]))
-		    #        else:
-		    #            break
-		    #    counter = 0
-		#        for sequence in SeqIO.parse(paths[i], "fastq"):
-		#            reverse_sequence = sequence.seq.reverse_complement()
-		#            if counter < read_amount:
-		#                counter += 1
-		#                for j in range(0, len(reverse_sequence) - BF.k+1, 10):
-		#                    BF.number_of_kmeres += 1
-		#                    BF.lookup(str(reverse_sequence[j: j + BF.k]))
-		#            else:
-		#                break
+                        reads_classified[genus[0] + ". " + prediction][1] += 1
+                        reads_classified[genus[0] + ". " + prediction][0] += max(score)
+                        reads_classified[genus[0] + ". " + prediction][2] += sorted(score)[-2]/max(score)
+                        reads_classified[genus[0] + ". " + prediction][3] += BF.number_of_kmeres
+                        reads_classified[genus[0] + ". " + prediction][4] += [bootstrap_score]
+                        reads_classified[genus[0] + ". " + prediction][5] += reads_filtered
+                        reads_classified[genus[0] + ". " + prediction][7] += [dna_composition]
+
             else:
+                # classification for sequence pure reads, check every 10th kmer (or everyone for "complete" mode)
                 counter = 0
+                # Important! Resetting the kmer_hits_single otherwise MEMORY LEAK
+                BF.kmer_hits_single = []
                 for sequence in SeqIO.parse(paths[i], "fastq"):
                     if counter < read_amount:
                         counter += 1
-                        for j in range(0, len(sequence.seq) - BF.k+1, 10):
+                        for j in range(0, len(sequence.seq) - BF.k+1, mode):
                             BF.number_of_kmeres += 1
                             kmer = str(sequence.seq[j : j + BF.k])
                             kmer_reversed = str(Seq(kmer).reverse_complement())
@@ -810,66 +722,47 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                     else:
                         break
             score = BF.get_score()
+
+            # ---------------------------------------------------------------------------------------------
+            # Collect results from classification
             if metagenome:
-                for prediction in reads_classified:
-                    kmers = reads_classified[prediction][5]
-                    # Strip "A."
-                    prediction = prediction[2:]
-                    # kmer mapping to genome, start by loading the kmer_dict in
-                    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
-                    # delete later
-                    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
-                    # cluster kmers to contigs
-                    # delete try later
-                    start_dict = time.time()
-                    try:
-                        with open(path_pos, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    except:
-                        with open(path_posv2, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    end_dict = time.time()
-                    needed_dict = round(end_dict - start_dict, 2)
-                    print("Time needed to load kmer_dict in: ", needed_dict)
-                    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
-                    reads_classified["A." + prediction][6] = contig_amounts_distances
                 for key, value in reads_classified.items():
                     if key == "unknown":
                         continue
                     value.insert(2, value[0]/value[1])
                     value.pop(0)
                     reads_classified[key] = value
-                    print(key, value[0], round(value[1], 2), round(value[2]/value[0], 2), round(value[3]/value[0], 2), statistics.median(value[4]), value[6])
-            names = []
-            BioMonitoring = False
-            if BioMonitoring:
-                with open(r'filter/FilterCulicidaeSpecies.txt', 'rb') as fp:
-                    names = pickle.load(fp)
-            else:
-                with open(r'filter/FilterSpecies.txt', 'rb') as fp:
-                    names = pickle.load(fp)
+                    print(key, value[0], round(value[1], 2), round(value[2]/value[0], 2), round(value[3]/value[0], 2), statistics.median(value[4]), value[6], value[7])
             score_edit = [str(x) for x in score]
             score_edit = ",".join(score_edit)
         # making prediction
-        BioMonitoring = False
-        if not metagenome and not BioMonitoring:
-            prediction = Classifier.classify(r'Training_data/Training_data_spec.csv', score, True)
+        if not metagenome:
+            #prediction = Classifier.classify(r'Training_data/Training_data_spec.csv', score, True)
+            # Phillip
+            file_name = genus + "_Training_data_spec.csv"
+            path = Path(__file__).parent.absolute() / "Training_data" / file_name
+            prediction = Classifier.classify(path, score, True)
+            # SVM TURNED OFF TEsting!!
+            index_result = max(range(len(score)), key=score.__getitem__)
+            #prediction = names[index_result]
+            names_copy = names[:]
+            # sort score by descending order and names_copy accordingly
+            score, names_copy = zip(*sorted(zip(score, names_copy), reverse=True))
+            #print(score[0:3])
+            #print(names_copy[0:3])
         else:
             index_result = max(range(len(score)), key=score.__getitem__)
             prediction = names[index_result]
-        if False:
-            predictions.append("unknown")
-            scores.append(str(max(score)))
+        # Phillip
+        unknown_predictions = ["sp.", "unknown"]
+        if prediction not in unknown_predictions:
+            prediction_name = translation_dict[prediction]
+            short_prediction_name = " ".join(prediction_name.split(" ")[1:])
+            predictions.append(f"{genus[0]}. {short_prediction_name}")
         else:
-            if BioMonitoring:
-                predictions.append(prediction)
-                scores.append(str(max(score)))
-            else:
-                predictions.append("A. " + prediction)
-                scores.append(str(max(score)))
-    if BioMonitoring:
-        for i in range(len(predictions)):
-            print(files[i] + ": " + "Predicted species: ", predictions[i], " Score: ", scores[i])
+            predictions.append(f"{genus[0]}. {prediction}")
+        #
+        scores.append(str(max(score)))
     print("Taxonomic assignment done...")
     return predictions, scores
 
@@ -1000,22 +893,54 @@ def blaOXA(BF_3, files, paths, file_format, read_amount):
     return scores_oxa, scores_oxa_ind
 
 
+# Funktion zur Bestimmung der DNA-Zusammensetzung
+def calculate_dna_composition(sequence):
+    composition = {'A': 0, 'C': 0, 'G': 0, 'T': 0}
+    
+    total = 0
+    for base in sequence:
+        if base in composition:
+            composition[base] += 1
+            total += 1
+    for base in composition:
+        composition[base] = round(composition[base] / total, 2)
+    
+    return composition
+
+
 def main():
 
     arg_list = sys.argv
-    if "XspecT" in arg_list:
+    #Phillip
+    genus = arg_list[1]
+    genera = search_filter.get_genera_array_sizes()
+    genera = list(genera.keys())
+
+    # check for args that the tool doesnt know
+    # list of all known args
+    known_args = ["XspecT", "xspect", "ClAssT", "classt", "Oxa", "oxa", "Metagenome", "metagenome", "fasta", "fna", "fa", "fastq", "fq", "save", "Save", "complete", "Complete"]
+    # TODO
+
+    if genus not in genera:
+        print(f"{genus} is unknown.")
+        quit()
+    if "XspecT" in arg_list or "xspect" in arg_list:
         XspecT = True
     else:
         XspecT = False
-    if "ClAssT" in arg_list:
+    if "ClAssT" in arg_list or "classt" in arg_list and genus == "Acinetobacter":
         ClAssT = True
+    elif "ClAssT" in arg_list or "classt" in arg_list and genus != "Acinetobacter":
+        print(f"ClAssT unavailable for {genus}")
     else:
         ClAssT = False
-    if "Oxa" in arg_list:
+    if "Oxa" in arg_list or "oxa" in arg_list and genus == "Acinetobacter":
         oxa = True
+    elif "Oxa" in arg_list or "oxa" in arg_list and genus != "Acinetobacter":
+        print(f"Oxa unavailable for {genus}")
     else:
         oxa = False
-    if "Metagenome" in arg_list:
+    if "Metagenome" in arg_list or "metagenome" in arg_list:
         metagenome = True
     else:
         metagenome = False
@@ -1033,92 +958,18 @@ def main():
     else:
         print("Error: Wrong Input, use fasta/fna/fa or fastq/fq!")
         quit()
-    if "save" in arg_list:
+    if "save" in arg_list or "Save" in arg_list:
         csv_table = True
     else:
         csv_table = False
+    if "complete" in arg_list or "Complete" in arg_list:
+        mode = 1
+    else:
+        mode = 500
 
     file_path = arg_list[-1]
     
-    """print("")
-    print("XspecT performs a taxonomic assignment on the species-level for bacteria of the genus Acinetobacter.")
-    print("ClAssT performs a strain-typing one sub-type-level for A. baumannii.")
-    print("You can also screen your file for blaOXA-genes.")
-    print("XspecT/ClAssT needs a file path to all files where an assignment shall be performed.")
-    print("")
-    print("Run XspecT: (y/n)?")
-    XspecT = input()
-    if XspecT == "y":
-        XspecT = True
-    elif XspecT == "n":
-        XspecT = False
-    else:
-        print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        quit()
-    print("Run ClAssT: (y/n)?")
-    ClAssT = input()
-    if ClAssT == "y":
-        ClAssT = True
-    elif ClAssT == "n":
-        ClAssT = False
-    else:
-        print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        quit()
-    print("Screen for blaOXA-Genes: (y/n)?")
-    oxa = input()
-    if oxa == "y":
-        oxa = True
-    elif oxa == "n":
-        oxa = False
-    else:
-        print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        quit()
-    #print("Run BioMonitoring for mosquitos: (y/n)?")
-    #BioMonitoring = input()
-    #if BioMonitoring == "y":
-        #BioMonitoring = True
-    #elif BioMonitoring == "n":
-        #BioMonitoring = False
-    #else:
-        #print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        #quit()
-    print("Metagenome-Mode?: (y/n)?")
-    metagenome = input()
-    if metagenome == "y":
-        metagenome = True
-    elif metagenome == "n":
-        metagenome = False
-    else:
-        print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        quit()
-    print("Enter file-format: (fasta/fastq)")
-    file_format = input()
-    if file_format != "fasta" and file_format != "fastq":
-        print("Error: Invalid file-format, use fasta/fastq!")
-        quit()
-    if file_format == "fastq":
-        print("How many reads should be used: ")
-        read_amount = int(input())
-    else:
-        read_amount = 543789
-    if read_amount < 0:
-        print("Error: Invalid read amount")
-    print("Enter file-path:")
-    file_path = input()
-    print("Save results as CSV-table: (y/n)?")
-    csv_table = input()
-    print("")
-    if csv_table == "y":
-        csv_table = True
-    elif csv_table == "n":
-        csv_table = False
-    else:
-        print("Error: Wrong Input, use y/n (y=yes, n=no)!")
-        quit()
-    if XspecT == False and ClAssT == False and oxa == False:
-        print("No tool selected, closing application...")
-        quit()"""
-    xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_table, metagenome)
+    xspecT_mini(file_path, XspecT, ClAssT, oxa, file_format, read_amount, csv_table, metagenome, genus, mode)
 
 
 if __name__ == '__main__':

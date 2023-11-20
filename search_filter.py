@@ -5,6 +5,8 @@ import glob
 import os
 from collections import Counter
 import time
+from pathlib import Path
+from linecache import getline
 
 
 def get_added_genomes():
@@ -119,6 +121,100 @@ def pre_processing_ClAssT():
              r'filter/IC8.txt']
     BF.read_clonetypes(paths, clonetypes)
     return BF
+
+
+def get_genera_array_sizes():
+    """Searches for all genera that have Bloomfilters.
+
+    :return: A dictionary with the genus name as key and a list of array sizes as value.
+    """
+    array_size_path = Path(__file__).parent.absolute() / 'filter' / 'array_sizes'
+
+    # Get a list of all genera with bloomfilters.
+    genera = os.listdir(array_size_path)
+    genera_array_sizes = dict()
+
+    # Iterate through all genera.
+    for file_name in genera:
+        genus_name = str(file_name).split(".")[0]
+        file_path = str(array_size_path / str(file_name))
+        sizes = getline(file_path, 1).replace("\n", "")
+
+        # Array sizes are saved as a list with the size for species BF as first and meta-mode BF as second entry.
+        array_sizes = sizes.split(" ")
+
+        # Genus name is the key and array size list as value.
+        genera_array_sizes[genus_name] = array_sizes
+
+    return genera_array_sizes
+
+
+def pre_process_genus(genus, array_size, k=21, meta_mode=False):
+    """Pre processes the bloomfilter for the selected genus.
+
+    :param genus: Name of the genus.
+    :type genus: str
+    :param array_size: Size of the bloomfilter.
+    :type array_size: int
+    :param k: K-mer length.
+    :type k: int
+    :param meta_mode: Decides if metagenome mode was selected.
+    :type meta_mode: bool
+    :return: The preprocessed bloomfilter.
+    """
+    # Get the correct path to bloomfilter names.
+    if meta_mode:
+        file_name = 'Filter' + genus + 'Complete.txt'
+    else:
+        file_name = 'Filter' + genus + '.txt'
+    names_path = Path(__file__).parent.absolute() / 'filter' / 'species_names' / file_name
+    with open(names_path, 'rb') as fp:
+        names = pickle.load(fp)
+    # Set bloomfilter variables.
+    BF = BF_v2.AbaumanniiBloomfilter(array_size)
+    BF.set_arraysize(array_size)
+    BF.set_hashes(7)
+    BF.set_k(k)
+
+    # Get paths to the bloomfilters.
+    if meta_mode:
+        paths = [Path(__file__).parent.absolute() / 'filter' / 'Metagenomes' / (genus + '.txt')]
+    else:
+        genus_path = Path(__file__).parent.absolute() / 'filter' / genus
+        paths = sorted(os.listdir(genus_path))
+        for i in range(len(paths)):
+            paths[i] = genus_path / paths[i]
+
+    BF.read_clonetypes(paths, names)
+    return BF
+
+
+def pre_process_all(genera, k=21, meta_mode=False, genus=None):
+    """Pre process bloomfilters for all genera.
+
+    :param genera: All genera with their array sizes.
+    :type genera: dict[str, List[str]]
+    :param k: K-mer length.
+    :type k: int
+    :param meta_mode: Decides if metagenome mode was selected.
+    :type meta_mode: bool
+    :param genus: Name of genus that will be the only genus to be pre processed.
+    :type genus: list
+    :return: All genera as keys and their bloomfilters as values.
+    """
+    bloomfilters = dict()
+    # If a genus name is given, only pre process the given genus.
+    if genus:
+        for current_genus in list(genera.keys()):
+            if current_genus not in genus:
+                del genera[current_genus]
+    for genus in genera.keys():
+        if meta_mode:
+            BF = pre_process_genus(genus, int(genera[genus][1]), k=k, meta_mode=meta_mode)
+        else:
+            BF = pre_process_genus(genus, int(genera[genus][0]), k=k, meta_mode=meta_mode)
+        bloomfilters[genus] = BF
+    return bloomfilters
 
 
 def pre_processing():
