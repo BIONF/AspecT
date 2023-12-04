@@ -106,6 +106,7 @@ The amount of reads that will be used has to be set by the user when using seque
 
 ## Known Bugs
 Sometimes when searchinig for OXA genes, the score will be over 1.0. In this case it can be assumed that the full OXA gene has been found.
+
 Using a Python version >3.10 can cause issues with Python packages or increase runtime.
 
 
