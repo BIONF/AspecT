@@ -18,6 +18,7 @@ The tool is available as a web-based application and a smaller command line inte
     + [List of used Modules for Python (3.10):](#list-of-used-modules-for-python--310--)
     + [How to run the web-app: Local Deployment](#how-to-run-the-web-app--local-deployment)
 - [Input Data](#input-data)
+- [Known Bugs](#bugs)
 - [Walkthrough](#walkthrough)
 - [Contributors](#contributors)
 - [About this project](#about-this-project)
@@ -33,6 +34,7 @@ XspecT requires the latest 64 bit Python version and a list of Python Modules (s
 ```
 pip install -r requirements.txt
 ```
+
 #### List of used Modules for Python (3.10):
 - Flask
 - Flask-Bcrypt
@@ -52,6 +54,13 @@ pip install -r requirements.txt
 - Matplotlib
 - Pympler
 - H5py
+
+For XspecT-Dev. you also need to install jellyfish. Using conda:
+```
+conda install -c bioconda jellyfish
+```
+
+
 
 #### Get the Bloomfilters
 Copy the folder that is located in the following directory into your XspecT installation:
@@ -87,11 +96,18 @@ Important:
 - If you use reads the number of reads needs to specified directly after the file-type
 - the path to your data-set is the last argument
 - all commands are explained in XspecT_mini Commands/.md
+- Output data for the metagenome mode in XspecT_mini is temporary very simple in this format: [prediction    number-of-reads/contigs    score-median    repetitveness    length-median    bootstrap-median]
+- Adding new genera is only supported by XspecT_mini in the XspecT-Dev. branch
 
 ## Input Data
 XspecT is able to use either raw sequence-reads (FASTQ-format .fq/.fastq) or already assembled genomes (FASTA-format .fasta/.fna). Using sequence-reads saves up the assembly process but high-quality reads with a low error-rate are needed (e.g. Illumina-reads).
 
 The amount of reads that will be used has to be set by the user when using sequence-reads. The minimum amount is 5000 reads for species classification and 500 reads for sub-type classification. The maximum number of reads is limited by the browser and is usually around ~8 million reads. Using more reads will lead to a increased runtime (xsec./1mio reads).
+
+## Known Bugs
+Sometimes when searchinig for OXA genes, the score will be over 1.0. In this case it can be assumed that the full OXA gene has been found.
+Using a Python version >3.10 can cause issues with Python packages or increase runtime.
+
 
 ## Walkthrough
 A detailed walkthrough with examples is provided in Xspect’s wiki.
