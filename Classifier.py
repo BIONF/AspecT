@@ -108,6 +108,7 @@ def classify(csv_file, result, lst):
         X_train, y_train = cut_csv_spec(csv_file)
         svm = SVC(kernel='rbf', C=1.5).fit(X_train, y_train)
     # perform a prediction using the svm
+   
     prediction = svm.predict([result])
     if mode == "XspecT":
         if max(result) < 0.3:

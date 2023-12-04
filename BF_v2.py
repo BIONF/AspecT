@@ -3,6 +3,7 @@ try:
     import mmh3 as mmh3
 except ImportError:
     # ... otherwise fallback to this module!
+    print("USING pymmh3 instead of mmh3! (slower)")
     import pymmh3 as mmh3
 from bitarray import bitarray
 from Bio import SeqIO
@@ -31,7 +32,7 @@ class AbaumanniiBloomfilter:
     hits_per_filter = [0] * clonetypes  # Hit counter per IC/per Species
     array_size = 22000000  # Standard arraysize per IC is 22mio for Core-genome
     hashes = 7  # Number of used Hash-functions
-    k = 20  # length of the k-meres
+    k = 21  # length of the k-meres
     names = ['IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'IC6', 'IC7', 'IC8']  # names of the IC's
     number_of_kmeres = 0  # counter of k-meres, will be used to calculate score
     reads = 1000  # standard read number
@@ -159,7 +160,6 @@ class AbaumanniiBloomfilter:
     def read_clonetypes(self, paths, names):
         """ reads slices from files and concats them to a matrix,
         paths is list of paths and names is a string list"""
-
         # Updating parameters
         self.clonetypes = len(paths)
         self.names = names

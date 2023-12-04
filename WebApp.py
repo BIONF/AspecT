@@ -366,6 +366,8 @@ def assignspec():
 
     # Lookup in Bloomfilter
     # reads should be a list of sequences
+    print(len(reads))
+    print(quick)
     score_ct, names_ct, hits_ct, predictions = read_search_spec(reads, quick, BF_Master, ext)
 
     # preparing reads for oxa search
@@ -391,6 +393,9 @@ def assignspec():
         session['vals_ct_spec'] = score_ct
         session['names_ct_spec'] = names_ct
         session['hits_ct_spec'] = hits_ct
+        print(score_ct)
+        print(names_ct)
+        print(hits_ct)
 
     if oxa:
         if not metagenome:
@@ -508,14 +513,15 @@ def species():
     if request.method == 'POST':
         data = request.json
         if data is not None:
-            filename = data[-5]
-            session['quick'] = data[-4]
-            session['OXA'] = data[-3]
-            session['metagenome'] = data[-2]
-            session['Amplicon'] = data[-1]
-            del data[-5:]
+            #print(data)
+            filename = data[-4]
+            session['quick'] = data[-3]
+            session['OXA'] = data[-2]
+            session['metagenome'] = data[-1]
+            del data[-4:]
 
             name = r'files/' + str(secrets.token_hex(8)) + filename + '.txt'
+
 
             with open(name, 'w') as filehandle:
                 for read in data:
@@ -1299,4 +1305,4 @@ def resultsspecbaumannii():
                             prediction_claast=prediction_claast,
                             literature_all=literature_all)
 
-webbrowser.open('http://127.0.0.1:5000/')
+webbrowser.open('http://127.0.0.1:8000/')

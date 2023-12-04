@@ -134,7 +134,6 @@ def pre_processing():
     BF.set_arraysize(115000000)
     BF.set_hashes(7)
     BF.set_k(21)
-    #paths = sorted(os.listdir(r"filter/species_reversed/"))
     paths = sorted(os.listdir(r"filter/species/"))
     for i in range(len(paths)):
         paths[i] = r"filter/species/" + paths[i]

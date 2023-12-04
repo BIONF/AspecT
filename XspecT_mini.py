@@ -514,24 +514,24 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
             score = BF.get_score()
             #print("Scores: ", score)
             if metagenome:
-                for prediction in contigs_classified:
-                    kmers = contigs_classified[prediction][5]
+                #for prediction in contigs_classified:
+                #    kmers = contigs_classified[prediction][5]
                     # Strip "A."
-                    prediction = prediction[2:]
+                #    prediction = prediction[2:]
                     # kmer mapping to genome, start by loading the kmer_dict in
-                    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
+                #    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
                     # delete later
-                    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
+                #    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
                     # cluster kmers to contigs
                     # delete try later
-                    try:
-                        with open(path_pos, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    except:
-                        with open(path_posv2, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
-                    contigs_classified["A." + prediction][6] = contig_amounts_distances
+                #    try:
+                #        with open(path_pos, 'rb') as fp:
+                #            kmer_dict = pickle.load(fp)
+                #    except:
+                #        with open(path_posv2, 'rb') as fp:
+                #            kmer_dict = pickle.load(fp)
+                #    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
+                #    contigs_classified["A." + prediction][6] = contig_amounts_distances
                     #del kmer_dict
                 for key, value in contigs_classified.items():
                     number_of_contigs = value[1]
@@ -811,28 +811,28 @@ def xspecT(BF, BF_1_1, files, paths, file_format, read_amount, metagenome):
                         break
             score = BF.get_score()
             if metagenome:
-                for prediction in reads_classified:
-                    kmers = reads_classified[prediction][5]
+                #for prediction in reads_classified:
+                #    kmers = reads_classified[prediction][5]
                     # Strip "A."
-                    prediction = prediction[2:]
+                #    prediction = prediction[2:]
                     # kmer mapping to genome, start by loading the kmer_dict in
-                    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
+                #    path_pos = "filter\kmer_positions\Acinetobacter\\" + prediction + "_positions.txt"
                     # delete later
-                    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
+                #    path_posv2 = "filter\kmer_positions\Acinetobacter\\" + prediction + "_complete_positions.txt"
                     # cluster kmers to contigs
                     # delete try later
-                    start_dict = time.time()
-                    try:
-                        with open(path_pos, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    except:
-                        with open(path_posv2, 'rb') as fp:
-                            kmer_dict = pickle.load(fp)
-                    end_dict = time.time()
-                    needed_dict = round(end_dict - start_dict, 2)
-                    print("Time needed to load kmer_dict in: ", needed_dict)
-                    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
-                    reads_classified["A." + prediction][6] = contig_amounts_distances
+                #    start_dict = time.time()
+                #    try:
+                #        with open(path_pos, 'rb') as fp:
+                #            kmer_dict = pickle.load(fp)
+                #    except:
+                #        with open(path_posv2, 'rb') as fp:
+                #            kmer_dict = pickle.load(fp)
+                #    end_dict = time.time()
+                #    needed_dict = round(end_dict - start_dict, 2)
+                #    print("Time needed to load kmer_dict in: ", needed_dict)
+                #    contig_amounts_distances = bs.cluster_kmers(kmers, kmer_dict)
+                #    reads_classified["A." + prediction][6] = contig_amounts_distances
                 for key, value in reads_classified.items():
                     if key == "unknown":
                         continue
