@@ -18,4 +18,8 @@ Pympler
 H5py
 Bio
 wheel
+ncbi-datasets-pylib
 loguru
+seaborn
+Pympler
+pymmh3
