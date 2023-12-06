@@ -393,9 +393,9 @@ def assignspec():
         session['vals_ct_spec'] = score_ct
         session['names_ct_spec'] = names_ct
         session['hits_ct_spec'] = hits_ct
-        print(score_ct)
-        print(names_ct)
-        print(hits_ct)
+        #print(score_ct)
+        #print(names_ct)
+        #print(hits_ct)
 
     if oxa:
         if not metagenome:
