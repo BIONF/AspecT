@@ -66,7 +66,7 @@ conda install -c bioconda jellyfish
 Copy the folder that is located in the following directory into your XspecT installation:
 
 ```
-/share/project/dominik_s/XspecT/
+/share/project/dominik_s/XspecT/filter/acinetobacter
 ```
 
 
