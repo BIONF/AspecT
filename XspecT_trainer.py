@@ -29,12 +29,22 @@ def check_user_input(user_input: str):
         sci_name = metadata["sci_name"]
         tax_id = metadata["tax_id"]
         rank = metadata["rank"]
+        lineage = metadata["lineage"]
+        bacteria_id = 2
         if not sci_name == user_input and not tax_id == user_input:
             print(f"{get_current_time()}| The given genus: {user_input} was found as genus: {sci_name} "
                   f"ID: {tax_id}")
             print(f"{get_current_time()}| Using {sci_name} as genus name.")
         if rank == "GENUS":
-            return str(sci_name)
+            if bacteria_id not in lineage:
+                print(f"{get_current_time()}| The given genus is not a bacteria.")
+                print(f"{get_current_time()}| Do you want to continue: [y/n]")
+                choice = input("-> ").lower()
+                if choice == "y":
+                    return str(sci_name)
+                else:
+                    print(f"{get_current_time()}| Exiting...")
+                    exit()
         else:
             print(f"{get_current_time()}| {user_input} is rank {rank} and not genus.")
             exit()
@@ -287,6 +297,8 @@ def get_current_time():
 
 
 def main():
+    # TODO: Remove all used assemblies. Maybe write list with all used assemblies instead
+    # TODO: No backup of old filters
     # command line should look like this: python XspecT_trainer.py genus mode path_to_bf_files path_to_svm_files
     parser = init_argparse()
     args = parser.parse_args()
